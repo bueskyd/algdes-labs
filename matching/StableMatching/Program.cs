@@ -164,6 +164,13 @@ namespace Matching
                     AddManPreferences(men, id, words);
                 else
                     AddWomanPreferences(women, id, words);
+
+                words = Console.ReadLine().Split();
+                id = int.Parse(words[0].Substring(0, words[0].Length - 1));
+                if (id % 2 == 1)
+                    AddManPreferences(men, id, words);
+                else
+                    AddWomanPreferences(women, id, words);
             }
             return (men, women);
         }
