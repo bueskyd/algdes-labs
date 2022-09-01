@@ -8,31 +8,26 @@
     "net6.0": []
   },
   "packageFolders": {
-    "C:\\Users\\Alexander\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "/Users/adamnegaard/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\ITU\\Masters\\1. semester\\Algorithm_Design\\algdes-labs\\matching\\StableMatching\\StableMatching.csproj",
+      "projectUniqueName": "/Users/adamnegaard/Desktop/Skole/Msc/1-semester/AlgDes/algdes-labs/matching/StableMatching/StableMatching.csproj",
       "projectName": "StableMatching",
-      "projectPath": "D:\\ITU\\Masters\\1. semester\\Algorithm_Design\\algdes-labs\\matching\\StableMatching\\StableMatching.csproj",
-      "packagesPath": "C:\\Users\\Alexander\\.nuget\\packages\\",
-      "outputPath": "D:\\ITU\\Masters\\1. semester\\Algorithm_Design\\algdes-labs\\matching\\StableMatching\\obj\\",
+      "projectPath": "/Users/adamnegaard/Desktop/Skole/Msc/1-semester/AlgDes/algdes-labs/matching/StableMatching/StableMatching.csproj",
+      "packagesPath": "/Users/adamnegaard/.nuget/packages/",
+      "outputPath": "/Users/adamnegaard/Desktop/Skole/Msc/1-semester/AlgDes/algdes-labs/matching/StableMatching/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Alexander\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/adamnegaard/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "https://api.nuget.org/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {},
+        "https://nuget.emzi0767.com/api/v3/index.json": {}
       },
       "frameworks": {
         "net6.0": {
@@ -55,8 +50,7 @@
           "net47",
           "net471",
           "net472",
-          "net48",
-          "net481"
+          "net48"
         ],
         "assetTargetFallback": true,
         "warn": true,
@@ -65,7 +59,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.200/RuntimeIdentifierGraph.json"
       }
     }
   }
