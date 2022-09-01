@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.Design;
+﻿using System;
+using System.ComponentModel.Design;
 using System.Transactions;
 
 namespace Matching
@@ -106,6 +107,32 @@ namespace Matching
             return (id - 1) / 2;
         }
 
+        private static void AddManPreferences(List<Man> men, int id, string[] words)
+        {
+            int index = IdToIndex(id);
+            Man man = men[index];
+            for (int j = 1; j < words.Length; j++)
+            {
+                if (words[j].Length == 0)
+                    continue;
+                int preference = IdToIndex(int.Parse(words[j]));
+                man.AddPreference(preference);
+            }
+        }
+
+        private static void AddWomanPreferences(List<Woman> women, int id, string[] words)
+        {
+            int index = IdToIndex(id);
+            Woman woman = women[index];
+            for (int j = 1; j < words.Length; j++)
+            {
+                if (words[j].Length == 0)
+                    continue;
+                int manId = IdToIndex(int.Parse(words[j]));
+                woman.SetPreference(manId);
+            }
+        }
+
         private static (List<Man>, List<Woman>) ReadInput()
         {
             string line;
@@ -133,27 +160,10 @@ namespace Matching
             {
                 string[] words = Console.ReadLine().Split();
                 int id = int.Parse(words[0].Substring(0, words[0].Length - 1));
-                int index = IdToIndex(id);
-                Man man = men[index];
-                for (int j = 1; j < words.Length; j++)
-                {
-                    if (words[j].Length == 0)
-                        continue;
-                    int preference = IdToIndex(int.Parse(words[j]));
-                    man.AddPreference(preference);
-                }
-
-                words = Console.ReadLine().Split();
-                id = int.Parse(words[0].Substring(0, words[0].Length - 1));
-                index = IdToIndex(id);
-                Woman woman = women[index];
-                for (int j = 1; j < words.Length; j++)
-                {
-                    if (words[j].Length == 0)
-                        continue;
-                    int manId = IdToIndex(int.Parse(words[j]));
-                    woman.SetPreference(manId);
-                }
+                if (id % 2 == 1)
+                    AddManPreferences(men, id, words);
+                else
+                    AddWomanPreferences(women, id, words);
             }
             return (men, women);
         }
@@ -192,7 +202,6 @@ namespace Matching
             var (men, women) = ReadInput();
             StableMatching(men, women);
             PrintMatching(men, women);
-            Console.ReadLine();
         }
     }
 }
