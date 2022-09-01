@@ -149,6 +149,8 @@ namespace Matching
                 Woman woman = women[index];
                 for (int j = 1; j < words.Length; j++)
                 {
+                    if (words[j].Length == 0)
+                        continue;
                     int manId = IdToIndex(int.Parse(words[j]));
                     woman.SetPreference(manId);
                 }
