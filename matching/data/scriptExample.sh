@@ -4,6 +4,6 @@ for FILE in *-in.txt
 do
 	echo $FILE
 	base=${FILE%-in.txt}
-    java -cp '..'GS $FILE > $base.yourname.out.txt # replace with your command!
-    diff $base.yourname.out.txt $base-out.txt
+    dotnet run ../StableMatching/Program.cs --project ../StableMatching < $FILE > $base.adam.out.txt
+    diff $base.adam.out.txt $base-out.txt
 done
