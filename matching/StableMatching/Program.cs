@@ -2,15 +2,13 @@
 
 using StableMatching;
 
-var thoreParser = new ThoreParser("../../../sm-kt-p-4-in.txt");
-var n = thoreParser.ParseInt();
-
+var n = ThoreParser.ParseInt();
 var persons = new Person[n * 2];
 
 // fill people 
 for (var i = 0; i < n * 2; i++)
 {
-    var line = thoreParser.GetNextLineNonComment();
+    var line = ThoreParser.GetNextLineNonComment();
     var arr = line.Split(" ");
 
     var id = int.Parse(arr[0]);
@@ -24,7 +22,7 @@ for (var i = 0; i < n * 2; i++)
 // fill priorities 
 for (var i = 0; i < n * 2; i++)
 {
-    var line = thoreParser.GetNextLineNonComment();
+    var line = ThoreParser.GetNextLineNonComment();
     var arr = line.Split(": ");
     
     var id = int.Parse(arr[0]);

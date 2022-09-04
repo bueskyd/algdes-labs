@@ -4,14 +4,7 @@ namespace StableMatching;
 
 public class ThoreParser
 {
-    private readonly StreamReader reader;
-    
-    public ThoreParser(string fileName)
-    {
-        reader = File.OpenText(fileName);
-    }
-
-    public int ParseInt()
+    public static int ParseInt()
     {
         var intLine = GetNextLineNonComment();
 
@@ -20,9 +13,9 @@ public class ThoreParser
         
     }
 
-    public string GetNextLineNonComment()
+    public static string GetNextLineNonComment()
     {
-        var nextLine = reader.ReadLine();
+        var nextLine = Console.ReadLine();
         if (nextLine == null)
         {
             throw new Exception("No new line");
@@ -30,9 +23,9 @@ public class ThoreParser
         
         while (nextLine.StartsWith("#") || nextLine.Length == 0)
         {
-            nextLine = reader.ReadLine();
+            nextLine = Console.ReadLine();
         }
 
-        return nextLine;
+        return nextLine.Trim();
     }
 }
