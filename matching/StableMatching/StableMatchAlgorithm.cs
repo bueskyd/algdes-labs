@@ -1,18 +1,23 @@
-using System.Collections;
-using static System.Array;
-
 namespace StableMatching;
 
-public class StableMatchAlgorithm
+public static class StableMatchAlgorithm
 {
     /// <summary>
     /// Stable matching
     /// </summary>
     /// <param name="proposers"><b>Sorted</b> array of proposers</param>
     /// <param name="rejecters">Array of rejecters</param>
-    /// <returns>Returns a stable matching</returns>
-    public static int[] StableMatch(int n, Person[] proposers, Person[] rejecters)
+    /// <returns>Returns an array of a stable matching. Indexes in the array represent
+    /// index of the rejecter in rejecters array, and values represent index
+    /// of the proposer in the proposer array. </returns>
+    public static IEnumerable<int> StableMatch(Person[] proposers, Person[] rejecters)
     {
+        if (proposers.Length != rejecters.Length)
+        {
+            throw new Exception("Proposer and rejecter list must be equal length");
+        }
+
+        var n = proposers.Length;
         var freeProposers = new Stack<int>(Enumerable.Range(0, n).ToArray());
         var next = Enumerable.Repeat(0, n).ToArray();
         var matches = Enumerable.Repeat(-1, n).ToArray();
@@ -26,23 +31,21 @@ public class StableMatchAlgorithm
             for (var j = 0; j < n; j++)
             {
                 var proposerId = rejecter.priorities[j];
-                // even id's
-                rank[i][proposerId / 2] = j;
+                rank[i][proposerId] = j;
             }
         }
 
         return Matches(proposers, freeProposers, next, matches, rank);
     }
 
-    private static int[] Matches(Person[] proposers, Stack<int> freeProposers, int[] next, int[] matches, int[][] rank)
+    private static IEnumerable<int> Matches(IReadOnlyList<Person> proposers, Stack<int> freeProposers, IList<int> next, IList<int> matches, IReadOnlyList<int[]> rank)
     {
         while (freeProposers.Count > 0)
         {
             var proposerIndex = freeProposers.Pop();
             var proposer = proposers[proposerIndex];
             var rejecterIndexForProposer = next[proposerIndex];
-            // uneven id's
-            var rejecterIndex = proposer.priorities[rejecterIndexForProposer] / 2 - 1;
+            var rejecterIndex = proposer.priorities[rejecterIndexForProposer];
 
             var match = matches[rejecterIndex];
 
@@ -50,6 +53,7 @@ public class StableMatchAlgorithm
             {
                 matches[rejecterIndex] = proposerIndex;
             }
+            // first priority = index 0, last priority = index n
             else if (rank[rejecterIndex][proposerIndex] < rank[rejecterIndex][match])
             {
                 matches[rejecterIndex] = proposerIndex;

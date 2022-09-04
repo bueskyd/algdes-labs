@@ -17,6 +17,7 @@ for (var i = 0; i < n * 2; i++)
     var name = arr[1];
     var person = new Person(id, name);
     
+    // assuming the list of persons is always specified in the order of their id's
     persons[id - 1] = person;
 }
 
@@ -28,19 +29,34 @@ for (var i = 0; i < n * 2; i++)
     
     var id = int.Parse(arr[0]);
     var prioritiesString = arr[1];
-    var prioritiesStringArray = prioritiesString.Split(" ");
-    var priorities = prioritiesStringArray.Select(int.Parse).ToArray();
-
+    var prioritiesWithId = prioritiesString.Split(" ").Select(int.Parse).ToArray();
+    
+    // persons are indexed by their id as specified in the docs
     var person = persons[id - 1];
-    person.priorities = priorities;
+    person.priorities = prioritiesWithId;
     persons[id - 1] = person;
 }
 
-persons = persons.OrderBy(p => p.id).ToArray(); 
-var men = persons.Where(p => p.id % 2 == 1).ToArray();
-var women = persons.Where(p => p.id % 2 == 0).ToArray();
+var men = persons.Where(p => IsMan(p.id)).Select(p =>
+{
+    // convert women id's to their index in the women array
+    var priorities = p.priorities.Select(id => id / 2 - 1).ToArray();
+    return new Person(p.id, p.name, priorities);
+}).ToArray();
 
-var matches = StableMatchAlgorithm.StableMatch(n, men, women)
+var women = persons.Where(p => !IsMan(p.id)).Select(p =>
+{
+    // convert men id's to their index in the men array
+    var priorities = p.priorities.Select(id => id / 2).ToArray();
+    return new Person(p.id, p.name, priorities);
+}).ToArray();
+
+bool IsMan(int id)
+{
+    return id % 2 == 1;
+}
+
+var matches = StableMatchAlgorithm.StableMatch(men, women)
     .Select((n, i) => (n, i))
     .OrderBy(entry => entry.n);
 
