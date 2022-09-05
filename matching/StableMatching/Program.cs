@@ -83,12 +83,12 @@ public class Program
         for(int i = 0; i < n*2; i++) {
             var info = lines[index++].Split(" ");
             if (i % 2 == 0) {
-                var p = new Proposer() { id = int.Parse(info[0])-1, Name = info[1], Prefs = new FixedStack<int>(n) };
+                var p = new Proposer() { id = (int.Parse(info[0])-1)/2, Name = info[1], Prefs = new FixedStack<int>(n) };
                 proposers.Push(p);
             }
             else {
-                var r = new Rejector() { id = int.Parse(info[0])-1, Name = info[1], Prefs = new int[n] };
-                rejectors[r.id/2] = r;
+                var r = new Rejector() { id = (int.Parse(info[0])-1)/2, Name = info[1], Prefs = new int[n] };
+                rejectors[r.id] = r;
             }
         }
 
@@ -135,8 +135,8 @@ public class Program
                 continue;
             }
             
-            var current = rejector.Prefs[rejector.engagement.id/2];
-            var given = rejector.Prefs[proposer.id/2];
+            var current = rejector.Prefs[rejector.engagement.id];
+            var given = rejector.Prefs[proposer.id];
 
             // Lower is better
             if (given < current) {
