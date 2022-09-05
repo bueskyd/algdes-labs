@@ -1,9 +1,3 @@
-#!/bin/sh
-for FILE in *-in.txt
+#!/bin/bash
 
-do
-	echo $FILE
-	base=${FILE%-in.txt}
-    java -cp '..'GS $FILE > $base.yourname.out.txt # replace with your command!
-    diff $base.yourname.out.txt $base-out.txt
-done
+for FILE in *-in.txt; do echo $FILE; base=${FILE%-in.txt}; dotnet run $FILE > $base.emja.out.txt; diff $base.emja.out.txt $base-out.txt; done

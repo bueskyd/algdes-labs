@@ -24,3 +24,6 @@
 *.synctex.gz
 *.fdb_latexmk
 *.fls
+
+obj
+bin
