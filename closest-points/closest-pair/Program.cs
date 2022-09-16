@@ -66,21 +66,20 @@ public class Program
         points.Sort((a,b) => a.x == b.x ? 0 : a.x - b.x <= 0 ? -1 : 1 ); 
 
         var closest = Closest(0, points.Count-1);
-        System.Console.WriteLine($"{closest.a.id} - {closest.b.id} : {Distance(closest.a, closest.b)}");
+        // System.Console.WriteLine($"{closest.a.id}({closest.a.x}, {closest.a.y}) - {closest.b.id}({closest.b.x}, {closest.b.y}) : {Distance(closest.a, closest.b)}");
+        System.Console.WriteLine(Distance(closest.a, closest.b));
     }
 
     public static (Point a, Point b) Closest(int left, int right) 
     {
-        // System.Console.WriteLine($"{left} - {right}");
-
         // 2 points left
         if (right - left == 1) return (points[left], points[right]);
         // 3 points left
-        if (right - left == 2) {    
-            var guess = Distance(points[left], points[right]);
-            if (Distance(points[left], points[left+1]) < guess) return (points[left], points[left+1]);
-            if (Distance(points[left+1], points[right]) < guess) return (points[left+1], points[right]);
-            return (points[left], points[right]);
+        if (right - left == 2) {
+            var guess = (points[left], points[right]);    
+            if (Distance(points[left], points[left+1]) < Distance(guess.Item1, guess.Item2)) guess = (points[left], points[left+1]);
+            if (Distance(points[left+1], points[right]) < Distance(guess.Item1, guess.Item2)) guess = (points[left+1], points[right]);
+            return guess;
         }
 
         var L = left + ((right - left)/2);
@@ -90,18 +89,10 @@ public class Program
         var currentBest = (Distance(leftBest.a, leftBest.b) < Distance(rightBest.a, rightBest.b)) ? leftBest : rightBest;
         var currentBestDistance = Distance(currentBest.a, currentBest.b);
 
-        var searchZoneLower = L-currentBestDistance;
-        var searchZoneUpper = L+currentBestDistance;
-
-        var searchZoneLower_idx = L;
-        while (points[searchZoneLower_idx].x >= searchZoneLower) {if (searchZoneLower_idx == 0) break; searchZoneLower_idx--;}
-
-        var searchZoneUpper_idx = L;
-        while (points[searchZoneUpper_idx].x <= searchZoneUpper) {if (searchZoneUpper_idx == points.Count-1) break; searchZoneUpper_idx++;}
+        var searchZoneLower_idx = Search(L-currentBestDistance, left, L, true);
+        var searchZoneUpper_idx = Search(L+currentBestDistance, L, right, false);
 
         var searchZoneLeft = points.GetRange(searchZoneLower_idx, L - searchZoneLower_idx);
-        searchZoneLeft.Sort((a,b) => a.y == b.y ? 0 : a.y - b.y <= 0 ? -1 : 1 ); 
-
         var searchZoneRight = points.GetRange(L, searchZoneUpper_idx - L);
         searchZoneRight.Sort((a,b) => a.y == b.y ? 0 : a.y - b.y <= 0 ? -1 : 1 ); 
 
@@ -111,7 +102,11 @@ public class Program
 
         for(int lzi = 0; lzi < searchZoneLeft.Count; lzi++) {
             for(int rzi = 0; rzi < searchZoneRight.Count; rzi++) {
-                var distance = Distance(searchZoneLeft[lzi], searchZoneRight[rzi]);
+                var l = searchZoneLeft[lzi];
+                var r = searchZoneRight[rzi];
+                if (r.y < l.y && l.y - r.y > currentBestDistance) continue;
+                if (r.y > l.y && r.y - l.y > currentBestDistance) break;
+                var distance = Distance(l, r);
                 if (distance < CrossBestDistance) {
                     CrossBestLeft = lzi;
                     CrossBestRight = rzi;
@@ -120,10 +115,31 @@ public class Program
             }
         }
 
-        if (CrossBestDistance == double.PositiveInfinity) return currentBest;
-        else if (CrossBestDistance < currentBestDistance) return (searchZoneLeft[CrossBestLeft], searchZoneRight[CrossBestRight]);
+        if (CrossBestDistance < currentBestDistance) return (searchZoneLeft[CrossBestLeft], searchZoneRight[CrossBestRight]);
         else return currentBest;
     } 
+
+    public static int Search(double x_value, int left, int right, bool lower_bound)
+    {
+        var result = _Search(x_value, left, right);
+        if (lower_bound) {
+            if (result != right && points[result].x < x_value) return result+1;
+        }
+        else {
+            if (result != left && points[result].x > x_value) return result-1;
+        }
+        return result;
+    }
+
+    public static int _Search(double x_value, int left, int right)
+    {
+        if (left == right) return left;
+        if (right - left == 1) return left;
+        var mid = left + ((right - left)/2);
+        if (x_value == points[mid].x) return mid;
+        else if (x_value < points[mid].x) return _Search(x_value, left, mid-1);
+        else return _Search(x_value, mid+1, right);
+    }
 
     public static double Distance(Point a, Point b) 
     {
