@@ -1,4 +1,6 @@
 */sol/
+bin
+obj
 *.aux
 *.glo
 *.idx
