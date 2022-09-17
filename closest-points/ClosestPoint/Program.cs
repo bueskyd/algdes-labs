@@ -6,11 +6,68 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Console.WriteLine(Double.Parse("2.88", NumberStyles.Float, CultureInfo.InvariantCulture));
-        foreach (var coord in ReadData())
+        var coords = ReadData();
+        var sortedX = coords.OrderBy(a => a.x).Select(x => x).ToList();
+        var sortedY = coords.OrderBy(a => a.y).Select(x => x).ToList();
+
+
+
+        ClosestPair(sortedX, sortedY, 0);
+    }
+
+    public static Pair ClosestPair(List<Coordinate> sortedX, List<Coordinate> sortedY, int layer)
+    {
+        // Stop the recursion by returning the remaining pair
+        if (sortedX.Count() <= 3)
         {
-            Console.WriteLine(coord);
+            if (sortedX.Count() == 2) return new Pair(sortedX[0], sortedY[1]);
+            var pairs = new List<Pair>() {
+                new Pair(sortedX[0], sortedX[1]),
+                new Pair(sortedX[1], sortedX[2]),
+                new Pair(sortedX[2], sortedX[0])
+            }.OrderBy(a => a.Distance());
+            return pairs.First();
         }
+
+        // Split the points into right and left part. Alternates between splitting on x and y. Maybe no alternating needed?
+        int splitIndex = sortedX.Count() / 2;
+        var leftPart = layer % 2 == 0 ? sortedX.Take(splitIndex) : sortedY.Take(splitIndex);
+        var rightPart = layer % 2 == 0 ? sortedX.Skip(splitIndex) : sortedY.Skip(splitIndex);
+
+        // Points in left part sorted by x and y
+        var leftPartX = leftPart.OrderBy(a => a.x).Select(x => x).ToList();
+        var leftPartY = leftPart.OrderBy(a => a.y).Select(x => x).ToList();
+
+        // Maps from point-id to their index in the left lists
+        var leftPartXIndexMap = GetIndexMap(leftPartX);
+        var leftPartYIndexMap = GetIndexMap(leftPartY);
+
+        var rightPartX = rightPart.OrderBy(a => a.x).Select(x => x).ToList();
+        var rightPartY = rightPart.OrderBy(a => a.y).Select(x => x).ToList();
+
+        var rightPartXIndexMap = GetIndexMap(rightPartX);
+        var rightPartYIndexMap = GetIndexMap(rightPartY);
+
+        // Find best solutions in each half
+        var bestLeft = ClosestPair(leftPartX, leftPartY, layer + 1);
+        var bestRight = ClosestPair(rightPartX, rightPartY, layer + 1);
+
+
+        var maxX = sortedX.Last().x; // TODO
+
+
+        // Return pair with shortest distance
+        return bestLeft.Distance() < bestRight.Distance() ? bestLeft : bestRight;
+    }
+
+    public static Dictionary<string, int> GetIndexMap(List<Coordinate> coords)
+    {
+        Dictionary<string, int> idToIndex = new();
+        for (int i = 0; i < coords.Count(); i++)
+        {
+            idToIndex.Add(coords[i].id, i);
+        }
+        return idToIndex;
     }
 
     public static List<Coordinate> ReadData()
@@ -19,7 +76,8 @@ public class Program
 
         List<Coordinate> coords = new();
 
-        var pattern = new Regex(@"\s*(?<id>\S+)\s*(?<x>\S+)\s*(?<y>\S+)");
+        var number = @"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?";
+        var pattern = new Regex(@$"(\d+)\s+({number})\s+({number})");
 
         while (currLine != null && !currLine.Contains("EOF") && currLine.Trim() != "")
         {
@@ -58,5 +116,26 @@ public class Coordinate
     public override string ToString()
     {
         return $"{id}: {x}, {y}";
+    }
+
+    public double DistanceTo(Coordinate that)
+    {
+        return Math.Sqrt(Math.Pow(this.x - that.x, 2) + Math.Pow(this.y - that.y, 2));
+    }
+}
+
+public class Pair
+{
+    public Coordinate fst;
+    public Coordinate snd;
+    public Pair(Coordinate fst, Coordinate snd)
+    {
+        this.fst = fst;
+        this.snd = snd;
+    }
+
+    public double Distance()
+    {
+        return fst.DistanceTo(snd);
     }
 }
