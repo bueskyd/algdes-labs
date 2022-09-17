@@ -1,8 +1,4 @@
-﻿using System;
-using System.ComponentModel.Design;
-using System.Transactions;
-
-namespace Matching
+﻿namespace Matching
 {
     class Man
     {

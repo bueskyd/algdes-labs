@@ -24,3 +24,12 @@
 *.synctex.gz
 *.fdb_latexmk
 *.fls
+/matching/StableMatching/.vs/StableMatching
+/matching/StableMatching/bin/Debug/net6.0
+/matching/StableMatching/obj/Debug/net6.0
+/matching/.alexander.out.txt
+/matching/.yourname.out.txt
+/matching/StableMatching/.vs/ProjectEvaluation
+/closest-points/ClosestPoints/ClosestPoints/obj
+/closest-points/ClosestPoints/ClosestPoints/bin/Debug/net6.0
+/closest-points/ClosestPoints/.vs
