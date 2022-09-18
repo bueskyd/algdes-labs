@@ -31,8 +31,10 @@ public class Program
 
         // Split the points into right and left part. Alternates between splitting on x and y. Maybe no alternating needed?
         int splitIndex = sortedX.Count() / 2;
-        var leftPart = layer % 2 == 0 ? sortedX.Take(splitIndex) : sortedY.Take(splitIndex);
-        var rightPart = layer % 2 == 0 ? sortedX.Skip(splitIndex) : sortedY.Skip(splitIndex);
+        // var leftPart = layer % 2 == 0 ? sortedX.Take(splitIndex) : sortedY.Take(splitIndex);
+        // var rightPart = layer % 2 == 0 ? sortedX.Skip(splitIndex) : sortedY.Skip(splitIndex);
+        var leftPart = sortedX.Take(splitIndex);
+        var rightPart = sortedX.Skip(splitIndex);
 
         // Points in left part sorted by x and y
         var leftPartX = leftPart.OrderBy(a => a.x).Select(x => x).ToList();
@@ -53,11 +55,30 @@ public class Program
         var bestRight = ClosestPair(rightPartX, rightPartY, layer + 1);
 
 
-        var maxX = sortedX.Last().x; // TODO
+        var shortestDist = bestLeft.Distance() < bestRight.Distance() ? bestLeft : bestRight;
+        var maxX = leftPartX.Last().x; // TODO
 
+        // All points within maxX of the splitting line on the y axis
+        var Sy = sortedY.Where(p => Math.Abs(p.x - maxX) <= shortestDist.Distance()).Select(p => p).ToList();
+
+        // Get best pair from these, checking next 15 options for each
+        Pair bestPairSy = Pair.WorstPair;
+        for (int i = 0; i < Sy.Count(); i++)
+        {
+            var curr = Sy[i];
+            int next15 = Math.Min(i + 15, Sy.Count());
+            for (int j = 0; j < next15; j++)
+            {
+                if (bestPairSy is null || bestPairSy.Distance() > curr.DistanceTo(Sy[i + j])) bestPairSy = new Pair(curr, Sy[i + j]);
+            }
+        }
 
         // Return pair with shortest distance
-        return bestLeft.Distance() < bestRight.Distance() ? bestLeft : bestRight;
+        if (bestPairSy.Distance() < bestLeft.Distance() && bestPairSy.Distance() < bestRight.Distance()) return bestPairSy;
+        else if (bestLeft.Distance() < bestPairSy.Distance() && bestLeft.Distance() < bestRight.Distance()) return bestLeft;
+        else return bestRight;
+
+        // return bestLeft.Distance() < bestRight.Distance() ? bestLeft : bestRight;
     }
 
     public static Dictionary<string, int> GetIndexMap(List<Coordinate> coords)
@@ -133,6 +154,8 @@ public class Pair
         this.fst = fst;
         this.snd = snd;
     }
+
+    public static Pair WorstPair = new Pair(new Coordinate("", double.PositiveInfinity, double.PositiveInfinity), new Coordinate("", double.NegativeInfinity, double.NegativeInfinity));
 
     public double Distance()
     {
