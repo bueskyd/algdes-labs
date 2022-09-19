@@ -29,11 +29,11 @@
                 System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        private static List<Point> ReadInput(StreamReader reader)
+        private static List<Point> ReadInput()
         {
-            while ((reader.ReadLine().Trim()) != "NODE_COORD_SECTION") ;
+            while ((Console.ReadLine().Trim()) != "NODE_COORD_SECTION") ;
             List<Point> points = new List<Point>();
-            string? line = reader.ReadLine()?.Trim();
+            string? line = Console.ReadLine()?.Trim();
             while (line is not null && line != "" && line != "EOF")
             {
                 line = line.Trim();
@@ -42,7 +42,7 @@
                 double x = Parse(words[1]);
                 double y = Parse(words[2]);
                 points.Add(new Point(x, y, pointId - 1));
-                line = reader.ReadLine()?.Trim();
+                line = Console.ReadLine()?.Trim();
             }
             return points;
         }
@@ -69,7 +69,7 @@
                 if (qy[i].y < ry[j].y) strip.Add(qy[i++]);
                 else strip.Add(ry[j++]);
             }
-                
+
             for (; i < qy.Count; ++i) if (l - qy[i].x <= minDistance) strip.Add(qy[i]);
             for (; j < ry.Count; ++j) if (ry[j].x - l <= minDistance) strip.Add(ry[j]);
             return strip;
@@ -114,6 +114,7 @@
                 rx.Add(xSorted[i]);
                 inLeft[xSorted[i].id] = false;
             }
+
             foreach (Point point in ySorted)
                 if (inLeft[point.id])
                     qy.Add(point);
@@ -150,69 +151,24 @@
             return (minDistance, id0, id1);
         }
 
-        private static (double, int, int) Bruteforce(List<Point> points)
-        {
-            int id0 = -1, id1 = -1;
-            double minDistance = double.MaxValue;
-            for (int i = 0; i < points.Count; i++)
-                for (int j = i + 1; j < points.Count; j++)
-                {
-                    double distance;
-                    if ((distance = Distance(points[i], points[j])) < minDistance)
-                    {
-                        minDistance = distance;
-                        id0 = points[i].id;
-                        id1 = points[j].id;
-                    }
-                }
-            return (minDistance, id0, id1);
-        }
-
         public static void Main(string[] args)
         {
-            using var expectedOutput = new StreamReader("..\\..\\..\\..\\..\\data\\closest-pair-out.txt");
-
-            foreach (string file in Directory.EnumerateFiles("..\\..\\..\\..\\..\\data"))
+            var points = ReadInput();
+            List<Point> xSorted = new();
+            List<Point> ySorted = new();
+            List<bool> inLeft = new();
+            foreach (Point point in points)
             {
-                var suffix = file.Substring(file.Length - 7, 7);
-                if (suffix != "tsp.txt")
-                    continue;
-                string filename = file;
-                for (int i = filename.Length - 1; i >= 0; i--)
-                    if (filename[i] == '\\')
-                    {
-                        filename = filename.Substring(i + 1);
-                        filename = filename.Substring(0, filename.Length - 4);
-                        filename = filename.Replace('-', '.');
-                        break;
-                    }
-                Console.WriteLine($"Calculating {filename}...");
-                using StreamReader reader = new StreamReader(file);
-                var points = ReadInput(reader);
-                List<Point> xSorted = new();
-                List<Point> ySorted = new();
-                List<bool> inLeft = new();
-                foreach (Point point in points)
-                {
-                    xSorted.Add(point);
-                    ySorted.Add(point);
-                    inLeft.Add(false);
-                }
-
-                xSorted.Sort((a, b) => a.x == b.x ? 0 : a.x < b.x ? -1 : 1);
-                ySorted.Sort((a, b) => a.y == b.y ? 0 : a.y < b.y ? -1 : 1);
-                var (distance, id0, id1) = ClosestPair(inLeft, xSorted, ySorted);
-                Console.WriteLine($"../data/{filename}: {points.Count} {distance}");
-                var (bruteforce, bid0, bid1) = Bruteforce(points);
-                string? expected = expectedOutput.ReadLine();
-                string[] expectedWords = expected.Split(
-                    ' ',
-                    StringSplitOptions.RemoveEmptyEntries |
-                    StringSplitOptions.TrimEntries);
-                double expectedDistance = Parse(expectedWords[^1]);
-                if (distance < expectedDistance - 0.001 || distance > expectedDistance + 0.001)
-                    Console.WriteLine($"Incorrect: {distance}, {expectedDistance}");
+                xSorted.Add(point);
+                ySorted.Add(point);
+                inLeft.Add(false);
             }
+
+            xSorted.Sort((a, b) => a.x == b.x ? 0 : a.x < b.x ? -1 : 1);
+            ySorted.Sort((a, b) => a.y == b.y ? 0 : a.y < b.y ? -1 : 1);
+
+            var (distance, id0, id1) = ClosestPair(inLeft, xSorted, ySorted);
+            Console.WriteLine(distance);
         }
     }
 }
