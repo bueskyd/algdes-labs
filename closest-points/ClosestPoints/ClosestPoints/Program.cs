@@ -132,15 +132,6 @@
             }
 
             double l = qx[^1].x;
-
-            if (xSorted.Count == 66)
-            {
-                foreach (Point point in xSorted)
-                {
-                    if (point.id == 1272)
-                        break;
-                }
-            }
             List<Point> strip = Strip(qy, ry, l, minDistance);
 
             for (int i = 0; i < strip.Count; i++)
