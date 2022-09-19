@@ -9,7 +9,6 @@ public class Program
         var coords = ReadData();
         var sortedX = coords.OrderBy(a => a.x).Select(x => x).ToList();
         var sortedY = coords.OrderBy(a => a.y).Select(x => x).ToList();
-
         var result = ClosestPair(sortedX, sortedY);
         Console.WriteLine(result);
     }
@@ -19,7 +18,7 @@ public class Program
         // Stop the recursion by returning the remaining pair
         if (sortedX.Count() <= 3)
         {
-            if (sortedX.Count() == 2) return new Pair(sortedX[0], sortedY[1]);
+            if (sortedX.Count() == 2) return new Pair(sortedX[0], sortedX[1]);
             var pairs = new List<Pair>() {
                 new Pair(sortedX[0], sortedX[1]),
                 new Pair(sortedX[1], sortedX[2]),
@@ -33,12 +32,19 @@ public class Program
         var leftPart = sortedX.Take(splitIndex);
         var rightPart = sortedX.Skip(splitIndex);
 
-        // Points in left part sorted by x and y
-        var leftPartX = leftPart.OrderBy(a => a.x).Select(x => x).ToList();
-        var leftPartY = leftPart.OrderBy(a => a.y).Select(x => x).ToList();
+        // leftPart.ToList().ForEach(c => Console.Write(c.id));
+        // Console.WriteLine();
+        // Console.WriteLine("-----");
+        // rightPart.ToList().ForEach(c => Console.Write(c.id));
+        // Console.WriteLine();
+        // Console.WriteLine("=======");
 
-        var rightPartX = rightPart.OrderBy(a => a.x).Select(x => x).ToList();
-        var rightPartY = rightPart.OrderBy(a => a.y).Select(x => x).ToList();
+        // Points in left part sorted by x and y
+        var leftPartX = leftPart.OrderBy(a => a.x).ToList();
+        var leftPartY = leftPart.OrderBy(a => a.y).ToList();
+
+        var rightPartX = rightPart.OrderBy(a => a.x).ToList();
+        var rightPartY = rightPart.OrderBy(a => a.y).ToList();
 
         // Find best solutions in each half
         var bestLeft = ClosestPair(leftPartX, leftPartY);
@@ -46,33 +52,29 @@ public class Program
 
 
         var shortestDist = bestLeft.distance < bestRight.distance ? bestLeft : bestRight;
-        var maxX = leftPartX.Last().x; // TODO
+        var maxX = leftPartX.Last().x;
 
         // All points within maxX of the splitting line on the y axis
-        var Sy = sortedY.Where(p => Math.Abs(p.x) <= maxX).ToList();
+        var Sy = sortedY.Where(p => Math.Abs(p.x - maxX) <= shortestDist.distance).ToList();
 
         // Get best pair from these, checking next 15 options for each
         Pair bestPairSy = Pair.WorstPair;
         for (int i = 0; i < Sy.Count(); i++)
         {
             var curr = Sy[i];
-            int next15 = Math.Min(i + 15, Sy.Count()) - 1;
-            Console.WriteLine("Count: " + Sy.Count());
-            for (int j = 1; j < next15; j++)
+
+            for (int j = 1; j < 15; j++)
             {
-                Console.WriteLine(i + j);
-                if (i + j < Sy.Count() && !curr.Equals(Sy[i + j]) && (bestPairSy is null || bestPairSy.distance > curr.DistanceTo(Sy[i + j]))) bestPairSy = new Pair(curr, Sy[i + j]);
+                if (i + j >= Sy.Count()) break;
+                if (curr.id != Sy[i + j].id && (bestPairSy.distance > curr.DistanceTo(Sy[i + j]))) bestPairSy = new Pair(curr, Sy[i + j]);
             }
         }
 
-        Console.WriteLine("Left: " + bestLeft);
-        Console.WriteLine("Mid: " + bestPairSy);
-        Console.WriteLine("Right: " + bestRight);
+        // Console.WriteLine("Left: " + bestLeft);
+        // Console.WriteLine("Mid: " + bestPairSy);
+        // Console.WriteLine("Right: " + bestRight);
 
-        // Return pair with shortest distance
-        if (bestPairSy.distance < bestLeft.distance && bestPairSy.distance < bestRight.distance) return bestPairSy;
-        if (bestLeft.distance < bestPairSy.distance && bestLeft.distance < bestRight.distance) return bestLeft;
-        return bestRight;
+        return new List<Pair>() { bestLeft, bestRight, bestPairSy }.OrderBy(p => p.distance).First();
     }
 
     public static List<Coordinate> ReadData()
@@ -147,7 +149,7 @@ public class Pair
 
     public override string ToString()
     {
-        return "(" + fst.id + ", " + snd.id + ")";
+        return "(" + fst.id + ", " + snd.id + "): " + this.distance;
     }
 
     public static Pair WorstPair = new Pair(new Coordinate("", double.PositiveInfinity, double.PositiveInfinity), new Coordinate("", double.NegativeInfinity, double.NegativeInfinity));
