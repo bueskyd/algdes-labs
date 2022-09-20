@@ -7,10 +7,10 @@ public class Program
     public static void Main(string[] args)
     {
         var coords = ReadData();
-        var sortedX = coords.OrderBy(a => a.x).Select(x => x).ToList();
-        var sortedY = coords.OrderBy(a => a.y).Select(x => x).ToList();
+        var sortedX = coords.OrderBy(a => a.x).ToList();
+        var sortedY = coords.OrderBy(a => a.y).ToList();
         var result = ClosestPair(sortedX, sortedY);
-        Console.WriteLine(result);
+        Console.WriteLine(result.distance);
     }
 
     public static Pair ClosestPair(List<Coordinate> sortedX, List<Coordinate> sortedY)
@@ -29,52 +29,52 @@ public class Program
 
         // Split the points into right and left part. Alternates between splitting on x and y. Maybe no alternating needed?
         int splitIndex = sortedX.Count() / 2;
-        var leftPart = sortedX.Take(splitIndex);
-        var rightPart = sortedX.Skip(splitIndex);
+        var leftPart = sortedX.Take(splitIndex).ToList();
+        var rightPart = sortedX.Skip(splitIndex).ToList();
 
-        // leftPart.ToList().ForEach(c => Console.Write(c.id));
-        // Console.WriteLine();
-        // Console.WriteLine("-----");
-        // rightPart.ToList().ForEach(c => Console.Write(c.id));
-        // Console.WriteLine();
-        // Console.WriteLine("=======");
+        var maxX = leftPart.Last().x;
 
-        // Points in left part sorted by x and y
-        var leftPartX = leftPart.OrderBy(a => a.x).ToList();
-        var leftPartY = leftPart.OrderBy(a => a.y).ToList();
-
-        var rightPartX = rightPart.OrderBy(a => a.x).ToList();
-        var rightPartY = rightPart.OrderBy(a => a.y).ToList();
+        // Points in left and right parts sorted by y, with linear time
+        var (leftPartY, rightPartY) = SortY(sortedY, maxX);
 
         // Find best solutions in each half
-        var bestLeft = ClosestPair(leftPartX, leftPartY);
-        var bestRight = ClosestPair(rightPartX, rightPartY);
+        var bestLeft = ClosestPair(leftPart, leftPartY);
+        var bestRight = ClosestPair(rightPart, rightPartY);
 
 
         var shortestDist = bestLeft.distance < bestRight.distance ? bestLeft : bestRight;
-        var maxX = leftPartX.Last().x;
 
         // All points within maxX of the splitting line on the y axis
         var Sy = sortedY.Where(p => Math.Abs(p.x - maxX) <= shortestDist.distance).ToList();
 
         // Get best pair from these, checking next 15 options for each
-        Pair bestPairSy = Pair.WorstPair;
+        Pair bestMid = Pair.WorstPair;
         for (int i = 0; i < Sy.Count(); i++)
         {
             var curr = Sy[i];
 
-            for (int j = 1; j < 15; j++)
+            for (int j = 1; j <= 15; j++)
             {
                 if (i + j >= Sy.Count()) break;
-                if (curr.id != Sy[i + j].id && (bestPairSy.distance > curr.DistanceTo(Sy[i + j]))) bestPairSy = new Pair(curr, Sy[i + j]);
+                var next = Sy[i + j];
+                if ((bestMid.distance > curr.DistanceTo(next))) bestMid = new Pair(curr, next);
             }
         }
 
-        // Console.WriteLine("Left: " + bestLeft);
-        // Console.WriteLine("Mid: " + bestPairSy);
-        // Console.WriteLine("Right: " + bestRight);
+        return new List<Pair>() { bestLeft, bestMid, bestRight }.OrderBy(p => p.distance).First();
+    }
 
-        return new List<Pair>() { bestLeft, bestRight, bestPairSy }.OrderBy(p => p.distance).First();
+    public static (List<Coordinate>, List<Coordinate>) SortY(List<Coordinate> sortedY, double splittingLine)
+    {
+        List<Coordinate> left = new();
+        List<Coordinate> right = new();
+        foreach (var coord in sortedY)
+        {
+            if (coord.x <= splittingLine) left.Add(coord);
+            else right.Add(coord);
+        }
+
+        return (left, right);
     }
 
     public static List<Coordinate> ReadData()
@@ -122,11 +122,6 @@ public class Coordinate
     public override string ToString()
     {
         return $"{id}: {x}, {y}";
-    }
-
-    public bool Equals(Coordinate that)
-    {
-        return this.x == that.x && this.y == that.y;
     }
 
     public double DistanceTo(Coordinate that)
