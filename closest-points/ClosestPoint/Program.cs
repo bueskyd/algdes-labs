@@ -2,26 +2,28 @@
 using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Diagnostics;
+using System.Collections.Generic;
+using System;
 
 public class Program
 {
     public static void Main(string[] args)
     {
-        Stopwatch s = new Stopwatch();
-        s.Start();
-        RunThore();
-        s.Stop();
-        Console.WriteLine(s.ElapsedMilliseconds + " ms");
+        RunKattis();
+        // Stopwatch s = new Stopwatch();
+        // s.Start();
+        // RunThore();
+        // s.Stop();
+        // Console.WriteLine(s.ElapsedMilliseconds + " ms");
     }
 
     public static void RunKattis()
     {
         var line = Console.ReadLine();
 
-        while (line is not null && line[0] != '0')
+        while (line != null && line[0] != '0')
         {
             var coords = ReadDataKattis(int.Parse(line));
-            coords.ForEach(x => Console.WriteLine(x));
             var sortedX = coords.OrderBy(a => a.x).ToList();
             var sortedY = coords.OrderBy(a => a.y).ToList();
             var result = ClosestPair(sortedX, sortedY);
@@ -30,14 +32,14 @@ public class Program
         }
     }
 
-    public static void RunThore()
-    {
-        var coords = ReadData();
-        var sortedX = coords.OrderBy(a => a.x).ToList();
-        var sortedY = coords.OrderBy(a => a.y).ToList();
-        var result = ClosestPair(sortedX, sortedY);
-        Console.WriteLine(result.distance);
-    }
+    // public static void RunThore()
+    // {
+    //     var coords = ReadData();
+    //     var sortedX = coords.OrderBy(a => a.x).ToList();
+    //     var sortedY = coords.OrderBy(a => a.y).ToList();
+    //     var result = ClosestPair(sortedX, sortedY);
+    //     Console.WriteLine(result.distance);
+    // }
 
     public static Pair ClosestPair(List<Coordinate> sortedX, List<Coordinate> sortedY)
     {
@@ -61,7 +63,10 @@ public class Program
         var maxX = leftPart.Last().x;
 
         // Points in left and right parts sorted by y, with linear time
-        var (leftPartY, rightPartY) = SortY(sortedY, maxX);
+        var sortedYs = SortY(sortedY, maxX);
+
+        var leftPartY = sortedYs.fst;
+        var rightPartY = sortedYs.snd;
 
         // Find best solutions in each half
         var bestLeft = ClosestPair(leftPart, leftPartY);
@@ -90,51 +95,51 @@ public class Program
         return new List<Pair>() { bestLeft, bestMid, bestRight }.OrderBy(p => p.distance).First();
     }
 
-    public static (List<Coordinate>, List<Coordinate>) SortY(List<Coordinate> sortedY, double splittingLine)
+    public static Tuple<List<Coordinate>> SortY(List<Coordinate> sortedY, double splittingLine)
     {
-        List<Coordinate> left = new();
-        List<Coordinate> right = new();
+        List<Coordinate> left = new List<Coordinate>();
+        List<Coordinate> right = new List<Coordinate>();
         foreach (var coord in sortedY)
         {
             if (coord.x <= splittingLine) left.Add(coord);
             else right.Add(coord);
         }
 
-        return (left, right);
+        return new Tuple<List<Coordinate>>(left, right);
     }
 
-    public static List<Coordinate> ReadData()
-    {
-        var currLine = Console.ReadLine();
+    // public static List<Coordinate> ReadData()
+    // {
+    //     var currLine = Console.ReadLine();
 
-        List<Coordinate> coords = new();
+    //     List<Coordinate> coords = new List<Coordinate>();
 
-        var number = @"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?";
-        var pattern = new Regex(@$"(\w+)\s+({number})\s+({number})");
-        while (currLine != null && !currLine.Contains("EOF") && currLine.Trim() != "")
-        {
-            try
-            {
-                var match = pattern.Match(currLine);
-                var id = match.Groups[1].Value;
-                var x = match.Groups[2].Value;
-                var y = match.Groups[3].Value;
+    //     var number = @"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?";
+    //     var pattern = new Regex(@$"(\w+)\s+({number})\s+({number})");
+    //     while (currLine != null && !currLine.Contains("EOF") && currLine.Trim() != "")
+    //     {
+    //         try
+    //         {
+    //             var match = pattern.Match(currLine);
+    //             var id = match.Groups[1].Value;
+    //             var x = match.Groups[2].Value;
+    //             var y = match.Groups[3].Value;
 
-                var xP = double.Parse(x, NumberStyles.Float, CultureInfo.InvariantCulture);
-                var yP = double.Parse(y, NumberStyles.Float, CultureInfo.InvariantCulture);
-                coords.Add(new Coordinate(id, xP, yP));
-            }
-            catch { }
+    //             var xP = double.Parse(x, NumberStyles.Float, CultureInfo.InvariantCulture);
+    //             var yP = double.Parse(y, NumberStyles.Float, CultureInfo.InvariantCulture);
+    //             coords.Add(new Coordinate(id, xP, yP));
+    //         }
+    //         catch { }
 
-            currLine = Console.ReadLine();
-        }
+    //         currLine = Console.ReadLine();
+    //     }
 
-        return coords;
-    }
+    //     return coords;
+    // }
 
     public static List<Coordinate> ReadDataKattis(int n)
     {
-        List<Coordinate> coords = new();
+        List<Coordinate> coords = new List<Coordinate>();
 
         for (int i = 0; i < n; i++)
         {
@@ -145,7 +150,7 @@ public class Program
     }
 }
 
-public class Coordinate
+public struct Coordinate
 {
     public string id;
     public double x;
@@ -168,7 +173,7 @@ public class Coordinate
     }
 }
 
-public class Pair
+public struct Pair
 {
     public Coordinate fst;
     public Coordinate snd;
@@ -191,4 +196,16 @@ public class Pair
     }
 
     public static Pair WorstPair = new Pair(new Coordinate("", double.PositiveInfinity, double.PositiveInfinity), new Coordinate("", double.NegativeInfinity, double.NegativeInfinity));
+}
+
+public struct Tuple<T>
+{
+    public T fst;
+    public T snd;
+
+    public Tuple(T fst, T snd)
+    {
+        this.fst = fst;
+        this.snd = snd;
+    }
 }
