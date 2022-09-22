@@ -1,10 +1,36 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Diagnostics;
 
 public class Program
 {
     public static void Main(string[] args)
+    {
+        Stopwatch s = new Stopwatch();
+        s.Start();
+        RunThore();
+        s.Stop();
+        Console.WriteLine(s.ElapsedMilliseconds + " ms");
+    }
+
+    public static void RunKattis()
+    {
+        var line = Console.ReadLine();
+
+        while (line is not null && line[0] != '0')
+        {
+            var coords = ReadDataKattis(int.Parse(line));
+            coords.ForEach(x => Console.WriteLine(x));
+            var sortedX = coords.OrderBy(a => a.x).ToList();
+            var sortedY = coords.OrderBy(a => a.y).ToList();
+            var result = ClosestPair(sortedX, sortedY);
+            Console.WriteLine(result.KattisToString());
+            line = Console.ReadLine();
+        }
+    }
+
+    public static void RunThore()
     {
         var coords = ReadData();
         var sortedX = coords.OrderBy(a => a.x).ToList();
@@ -105,6 +131,18 @@ public class Program
 
         return coords;
     }
+
+    public static List<Coordinate> ReadDataKattis(int n)
+    {
+        List<Coordinate> coords = new();
+
+        for (int i = 0; i < n; i++)
+        {
+            var nums = Console.ReadLine().Split(" ").Select(x => double.Parse(x, NumberStyles.Float, CultureInfo.InvariantCulture)).ToList();
+            coords.Add(new Coordinate("", nums[0], nums[1]));
+        }
+        return coords;
+    }
 }
 
 public class Coordinate
@@ -145,6 +183,11 @@ public class Pair
     public override string ToString()
     {
         return "(" + fst.id + ", " + snd.id + "): " + this.distance;
+    }
+
+    public string KattisToString()
+    {
+        return $"{this.fst.x} {this.fst.y} {this.snd.x} {this.snd.y}";
     }
 
     public static Pair WorstPair = new Pair(new Coordinate("", double.PositiveInfinity, double.PositiveInfinity), new Coordinate("", double.NegativeInfinity, double.NegativeInfinity));
