@@ -1,3 +1,4 @@
+NODE_COORD_SECTION
 far 0 0
 romeo 0 10
 juliet 0 11

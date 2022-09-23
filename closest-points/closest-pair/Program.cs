@@ -57,8 +57,9 @@ public class Program
         points = new List<Point>();
         var id = 0;
         while(true) {
-            var line = reader().Trim();
-            if (line.Contains("EOF") || line is null || line == "") break;
+            var line = reader();
+            if (line is null || line.Contains("EOF") || line == "") break;
+            line = line.Trim();
             var data = Regex.Split(line, " +");
             points.Add(Point.New(data[0], parse(data[1]), parse(data[2])));
             id++;
@@ -86,14 +87,16 @@ public class Program
 
         var leftBest = Closest(left, L);
         var rightBest = Closest(L+1, right);
+
         var currentBest = (Distance(leftBest.a, leftBest.b) < Distance(rightBest.a, rightBest.b)) ? leftBest : rightBest;
         var currentBestDistance = Distance(currentBest.a, currentBest.b);
 
-        var searchZoneLower_idx = Search(L-currentBestDistance, left, L, true);
-        var searchZoneUpper_idx = Search(L+currentBestDistance, L, right, false);
+        var searchZoneLower_idx = Search(points[L].x-currentBestDistance, left, L, true);
+        var searchZoneUpper_idx = Search(points[L].x+currentBestDistance, L, right, false);
 
-        var searchZoneLeft = points.GetRange(searchZoneLower_idx, L - searchZoneLower_idx);
-        var searchZoneRight = points.GetRange(L, searchZoneUpper_idx - L);
+        var searchZoneLeft = points.GetRange(searchZoneLower_idx, (L - searchZoneLower_idx)+1);
+        var searchZoneRight = points.GetRange(L+1, searchZoneUpper_idx - L);
+
         searchZoneRight.Sort((a,b) => a.y == b.y ? 0 : a.y - b.y <= 0 ? -1 : 1 ); 
 
         var CrossBestLeft = 0;
@@ -123,10 +126,10 @@ public class Program
     {
         var result = _Search(x_value, left, right);
         if (lower_bound) {
-            if (result != right && points[result].x < x_value) return result+1;
+            while (result < right && points[result].x < x_value) result+=1;
         }
         else {
-            if (result != left && points[result].x > x_value) return result-1;
+            while (result > left && points[result].x > x_value) result-=1;
         }
         return result;
     }
@@ -134,10 +137,9 @@ public class Program
     public static int _Search(double x_value, int left, int right)
     {
         if (left == right) return left;
-        if (right - left == 1) return left;
         var mid = left + ((right - left)/2);
         if (x_value == points[mid].x) return mid;
-        else if (x_value < points[mid].x) return _Search(x_value, left, mid-1);
+        else if (x_value < points[mid].x) { if (left == mid) return left; else return _Search(x_value, left, mid-1);}
         else return _Search(x_value, mid+1, right);
     }
 

@@ -1,3 +1,4 @@
+NODE_COORD_SECTION
 far1 0 2
 far2 0 4
 far3 0 6
