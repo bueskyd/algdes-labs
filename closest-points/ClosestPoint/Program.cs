@@ -9,10 +9,10 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        RunKattis();
+        // RunKattis();
         // Stopwatch s = new Stopwatch();
         // s.Start();
-        // RunThore();
+        RunThore();
         // s.Stop();
         // Console.WriteLine(s.ElapsedMilliseconds + " ms");
     }
@@ -32,14 +32,18 @@ public class Program
         }
     }
 
-    // public static void RunThore()
-    // {
-    //     var coords = ReadData();
-    //     var sortedX = coords.OrderBy(a => a.x).ToList();
-    //     var sortedY = coords.OrderBy(a => a.y).ToList();
-    //     var result = ClosestPair(sortedX, sortedY);
-    //     Console.WriteLine(result.distance);
-    // }
+    public static void RunThore()
+    {
+        var s = new Stopwatch();
+        s.Start();
+        var coords = ReadData();
+        s.Stop();
+        Console.WriteLine(s.ElapsedMilliseconds + " ms parse ");
+        var sortedX = coords.OrderBy(a => a.x).ToList();
+        var sortedY = coords.OrderBy(a => a.y).ToList();
+        var result = ClosestPair(sortedX, sortedY);
+        Console.WriteLine(result.distance);
+    }
 
     public static Pair ClosestPair(List<Coordinate> sortedX, List<Coordinate> sortedY)
     {
@@ -108,34 +112,34 @@ public class Program
         return new Tuple<List<Coordinate>>(left, right);
     }
 
-    // public static List<Coordinate> ReadData()
-    // {
-    //     var currLine = Console.ReadLine();
+    public static List<Coordinate> ReadData()
+    {
+        var currLine = Console.ReadLine();
 
-    //     List<Coordinate> coords = new List<Coordinate>();
+        List<Coordinate> coords = new List<Coordinate>();
 
-    //     var number = @"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?";
-    //     var pattern = new Regex(@$"(\w+)\s+({number})\s+({number})");
-    //     while (currLine != null && !currLine.Contains("EOF") && currLine.Trim() != "")
-    //     {
-    //         try
-    //         {
-    //             var match = pattern.Match(currLine);
-    //             var id = match.Groups[1].Value;
-    //             var x = match.Groups[2].Value;
-    //             var y = match.Groups[3].Value;
+        var number = @"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?";
+        var pattern = new Regex(@$"(\w+)\s+({number})\s+({number})");
+        while (currLine != null && !currLine.Contains("EOF") && currLine.Trim() != "")
+        {
+            try
+            {
+                var match = pattern.Match(currLine);
+                var id = match.Groups[1].Value;
+                var x = match.Groups[2].Value;
+                var y = match.Groups[3].Value;
 
-    //             var xP = double.Parse(x, NumberStyles.Float, CultureInfo.InvariantCulture);
-    //             var yP = double.Parse(y, NumberStyles.Float, CultureInfo.InvariantCulture);
-    //             coords.Add(new Coordinate(id, xP, yP));
-    //         }
-    //         catch { }
+                var xP = double.Parse(x, NumberStyles.Float, CultureInfo.InvariantCulture);
+                var yP = double.Parse(y, NumberStyles.Float, CultureInfo.InvariantCulture);
+                coords.Add(new Coordinate(id, xP, yP));
+            }
+            catch { }
 
-    //         currLine = Console.ReadLine();
-    //     }
+            currLine = Console.ReadLine();
+        }
 
-    //     return coords;
-    // }
+        return coords;
+    }
 
     public static List<Coordinate> ReadDataKattis(int n)
     {
