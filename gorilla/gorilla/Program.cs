@@ -3,38 +3,42 @@ using System.Text;
 
 using static SeqElement;
 
-public class CacheEntry
-{
-    public int Value { get; set; }
-    public char? Symbols { get; set; }
-    public byte BackTrack { get; set; }
-}
-// Could combine Symbols and BackTrack in a char, bbxxxxxxxyyyyyyy, where b is BackTrack, x is the first symbol and y is the second
-// This would get us to 6B pr. entry, excluding object overhead
-
 public class Program
 {
     private readonly int[,] ValueMatrix;
-    private int[,] Cache;
     private readonly Dictionary<string, SeqElement[]> Sequences;
 
     public static void Main(string[] args)
     {
-        var matrix = LoadCostMatrix(args[0]);
-        var seqs = LoadSequences(args[1]);
+        var matrix = LoadCostMatrix(args[1]);
+        var seqs = LoadSequences(args[2]);
 
         var program = new Program(matrix, seqs);
 
-        System.Console.WriteLine("Choose pair:");
-        program.Match(Console.ReadLine(), Console.ReadLine());
-    }
-
-    public static CacheEntry Cache_Entry(int v, char? s, byte bt) {
-        return new CacheEntry() {
-            Value = v,
-            Symbols = s,
-            BackTrack = bt,
-        };
+        switch(args[0]) {
+            case "single":
+                System.Console.WriteLine("Choose pair:");
+                program.Match(Console.ReadLine(), Console.ReadLine());
+                break;
+            case "all":
+                var keys = seqs.Keys.ToArray();
+                var c = 0;
+                var i = 0;
+                while(i < keys.Length-1) {
+                    var j = i+1;
+                    while(j < keys.Length) {
+                        program.Match(keys[i], keys[j]);
+                        c++;
+                        j++;
+                    }
+                    i++;
+                }
+                System.Console.WriteLine($"Ran {c} matches");
+                break;
+            default:
+                System.Console.WriteLine("Unknown command!");
+                break;
+        }
     }
 
     public Program(int[,] matrix, Dictionary<string, SeqElement[]> seqs) {
@@ -47,49 +51,49 @@ public class Program
         var seq1 = Sequences[name1];
         var seq2 = Sequences[name2];
 
-        var Cache = new CacheEntry[seq1.Length+1, seq2.Length+1];
+        var Cache = new (int value, char symbols, byte trace)[seq1.Length+1, seq2.Length+1];
 
         var deltaValue = Value(_,A);
 
         var i = 0;
         var j = 0;
-        while(i < seq1.Length+1) {Cache[i,0] = Cache_Entry(i * deltaValue, null, 0b00); i++;}
-        while(j < seq2.Length+1) {Cache[0,j] = Cache_Entry(j * deltaValue, null, 0b00); j++;}
+        while(i < seq1.Length+1) {Cache[i,0] = (i * deltaValue, ' ', 0b00); i++;}
+        while(j < seq2.Length+1) {Cache[0,j] = (j * deltaValue, ' ', 0b00); j++;}
 
         i = 1;
         while(i <= seq1.Length) {
             j = 1;
             while(j <= seq2.Length) {
 
-                var match = Value(seq1[i-1], seq2[j-1]) + Cache[i-1, j-1].Value;
-                var move1 = deltaValue + Cache[i-1,j].Value;
-                var move2 = deltaValue + Cache[i,j-1].Value;
+                var match = Value(seq1[i-1], seq2[j-1]) + Cache[i-1, j-1].value;
+                var move1 = deltaValue + Cache[i-1,j].value;
+                var move2 = deltaValue + Cache[i,j-1].value;
 
                 if (move1 >= match && move1 >= move2) 
-                    Cache[i,j] = Cache_Entry(move1, Helpers.combine(seq1[i-1],_), 0b10);
+                    Cache[i,j] = (move1, Helpers.combine(seq1[i-1],_), 0b10);
                 else if (move2 >= match && move2 >= move1) 
-                    Cache[i,j] = Cache_Entry(move2, Helpers.combine(_,seq2[j-1]), 0b01);
+                    Cache[i,j] = (move2, Helpers.combine(_,seq2[j-1]), 0b01);
                 else 
-                    Cache[i,j] = Cache_Entry(match, Helpers.combine(seq1[i-1],seq2[j-1]), 0b11);
+                    Cache[i,j] = (match, Helpers.combine(seq1[i-1],seq2[j-1]), 0b11);
 
                 j++;
             }
             i++;
         }
 
-        System.Console.WriteLine($"{name1} : {name2} -> {Cache[seq1.Length, seq2.Length].Value}");
+        System.Console.WriteLine($"{name1} : {name2} -> {Cache[seq1.Length, seq2.Length].value}");
         var sbi = new StringBuilder();
         var sbj = new StringBuilder();
         i = seq1.Length;
         j = seq2.Length;
         while(true) {
             var entry = Cache[i,j];
-            if (entry.BackTrack == 0b00) break;
-            var (seq1e, seq2e) = Helpers.split(entry.Symbols.Value);
+            if (entry.trace == 0b00) break;
+            var (seq1e, seq2e) = Helpers.split(entry.symbols);
             sbi.Append(seq1e);
             sbj.Append(seq2e);
-            if ((entry.BackTrack & 0b10) != 0) i--;
-            if ((entry.BackTrack & 0b01) != 0) j--;
+            if ((entry.trace & 0b10) != 0) i--;
+            if ((entry.trace & 0b01) != 0) j--;
         }
         
         Console.WriteLine(new string(sbi.ToString().Reverse().ToArray()));
