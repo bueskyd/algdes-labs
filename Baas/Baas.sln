@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baas", "Baas\Baas.csproj", "{EDD3FC1A-DE06-432A-9C0D-D6B7EB065C17}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EDD3FC1A-DE06-432A-9C0D-D6B7EB065C17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDD3FC1A-DE06-432A-9C0D-D6B7EB065C17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDD3FC1A-DE06-432A-9C0D-D6B7EB065C17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDD3FC1A-DE06-432A-9C0D-D6B7EB065C17}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
