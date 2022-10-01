@@ -131,25 +131,23 @@ namespace Gorilla
         private static (int, string, string) Solve(string str0, string str1)
         {
             int gapCost = -4;
-            int firstCharCost = costs[str0[0], str1[0]];
-            TableEntry[,] m = new TableEntry[str0.Length, str1.Length];
-            for (int i = 0; i < str0.Length; i++)
-                m[i, 0] = new TableEntry(firstCharCost + i * gapCost, 1, 0);
-            for (int i = 0; i < str1.Length; i++)
-                m[0, i] = new TableEntry(firstCharCost + i * gapCost, 0, 1);
-            m[0, 0].deltaI = 0;
-            m[0, 0].deltaJ = 0;
+            TableEntry[,] m = new TableEntry[str0.Length + 1, str1.Length + 1];
+            for (int i = 1; i < str0.Length + 1; i++)
+                m[i, 0] = new TableEntry(i * gapCost, 1, 0);
+            for (int i = 1; i < str1.Length + 1; i++)
+                m[0, i] = new TableEntry(i * gapCost, 0, 1);
 
-            for (int i = 1; i < str0.Length; i++)
+            for (int i = 1; i < str0.Length + 1; i++)
             {
-                for (int j = 1; j < str1.Length; j++)
+                for (int j = 1; j < str1.Length + 1; j++)
                 {
                     int match =
-                        costs[str0[i], str1[j]] +
+                        costs[str0[i - 1], str1[j - 1]] +
                         m[i - 1, j - 1].m;
                     int gap0 = gapCost + m[i - 1, j].m;
                     int gap1 = gapCost + m[i, j - 1].m;
-                    int cost = 0, deltaI = 0, deltaJ = 0;
+                    int deltaI = 0, deltaJ = 0;
+                    int cost;
                     if (match >= gap0 && match >= gap1)
                     {
                         cost = match;
@@ -173,7 +171,7 @@ namespace Gorilla
                     m[i, j] = new TableEntry(cost, deltaI, deltaJ);
                 }
             }
-            int minCost = m[str0.Length - 1, str1.Length - 1].m;
+            int minCost = m[str0.Length, str1.Length].m;
             var (s0, s1)= ConstructSolution(m, str0, str1);
             return (minCost, s0, s1);
         }
