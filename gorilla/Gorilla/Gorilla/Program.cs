@@ -3,20 +3,23 @@
     public static class SchedulingAlgorithms
     {
 
+        private static readonly char BlossumMismatch = '*';
+        private static readonly char OutputMismatch = '-';
+        
         public static void Main(string[] args)
         {
             var tableParser = new TableParser();
-            
             var sequences = ParseSequences().ToList();
 
-            for (var i = 0; i < sequences.Count(); i++)
+            for (var i = 0; i < sequences.Count; i++)
             {
                 var sequenceI = sequences[i];
-                for (var j = i + 1; j < sequences.Count(); j++)
+                for (var j = i + 1; j < sequences.Count; j++)
                 {
                     var sequenceJ = sequences[j];
+
                     var (optimal, s1, s2) = Alignment(sequenceI, sequenceJ, tableParser);
-                    
+
                     Console.WriteLine($"{sequenceI.Name}--{sequenceJ.Name}: {optimal}");
                     Console.WriteLine(s1);
                     Console.WriteLine(s2);
@@ -35,145 +38,128 @@
                 {
                     sequenceString += nextLine;
                 }
-                var sequence = sequenceString.Trim().ToCharArray();
 
                 yield return new Sequence
                 {
                     Name = name.Substring(1),
-                    SequenceString = sequence.ToList()
+                    SequenceString = sequenceString.Trim()
                 };
             }
         }
 
-        private static (int optimal, string s1, string s2) Alignment(Sequence a, Sequence b, TableParser tableParser)
+        private static (int optimal, string sI, string sJ) Alignment(Sequence sequenceI, Sequence sequenceJ, TableParser tableParser)
         {
-            var aN = a.SequenceString.Count();
-            var bN = b.SequenceString.Count();
-            
-            var arr = new SeqRes[aN, bN];
+            var iN = sequenceI.SequenceString.Length;
+            var jN = sequenceJ.SequenceString.Length;
 
-            for (var i = 0; i < aN; i++)
+            var arr = new SeqRes[iN + 1, jN + 1];
+            
+            // the first link..
+            arr[0, 0] = new SeqRes
+            {
+                Cost = 0,
+                PrevI = null,
+                PrevJ = null
+            };
+
+            for (var i = 1; i < iN; i++)
             {
                 arr[i, 0] = new SeqRes
                 {
-                    Cost = i * tableParser.GetCost(a.SequenceString[i], '*') +
-                           tableParser.GetCost(a.SequenceString[i], b.SequenceString[0]),
-                    I = a.SequenceString[i],
-                    J = b.SequenceString[0],
-                    PrevI = i == 0 ? null : i - 1,
+                    Cost = 0,
+                    I = sequenceI.SequenceString[i],
+                    J = sequenceJ.SequenceString[0],
+                    PrevI = i - 1,
                     PrevJ = null
                 };
             }
-            for (var j = 0; j < bN; j++)
+            for (var j = 1; j < jN; j++)
             {
-
                 arr[0, j] = new SeqRes
                 {
-                    Cost = j * tableParser.GetCost('*', b.SequenceString[j]) +
-                           tableParser.GetCost(a.SequenceString[0], b.SequenceString[j]),
-                    I = a.SequenceString[0],
-                    J = b.SequenceString[j],
+                    Cost = 0,
+                    I = sequenceI.SequenceString[0],
+                    J = sequenceJ.SequenceString[j],
                     PrevI = null,
-                    PrevJ = j == 0 ? null : j - 1
+                    PrevJ = j - 1
                 };
             }
-            
-            // save the two used characters in the array, and the index of the previously used result.
-            // reverse the string when done.
-            for (var i = 1; i < aN; i++)
+
+            for (var j = 0; j < jN + 1; j++)
             {
-                for (var j = 1; j < bN; j++)
+                for (var i = j == 0 ? 1 : 0; i < iN + 1; i++)
                 {
-                    var res = Opt(i, a.SequenceString, j, b.SequenceString, arr, tableParser);
+                    var res = Opt(i, sequenceI.SequenceString, j, sequenceJ.SequenceString, arr, tableParser);
                     arr[i, j] = res;
                 }
             }
             
-            var optimal = arr[aN - 1, bN - 1];
-            var (stringA, stringB) = BuildString(arr, optimal);
+            var optimal = arr[iN, jN];
+            var (stringA, stringB) = BuildStrings(arr, optimal);
 
             return (optimal.Cost, stringA, stringB);
         }
 
         
-        private static SeqRes Opt(int i, List<char> sequenceI, int j, List<char> sequenceJ, SeqRes[,] arr, TableParser tableParser)
+        private static SeqRes Opt(int i, string sequenceI, int j, string sequenceJ, SeqRes[,] arr, TableParser tableParser)
         {
-            if (i == 0)
-            {
-                return new SeqRes 
-                {
-                    Cost = j * tableParser.GetCost('*', sequenceJ[j]),
-                    I = '*', 
-                    J = sequenceJ[j], 
-                    PrevI = null, 
-                    PrevJ = j-1
-                };
-            }
+            var match = int.MinValue;
+            var caseI = int.MinValue;
+            var caseII = int.MinValue;
             
-            if (j == 0)
-            {
-                return new SeqRes
-                {
-                    Cost = i * tableParser.GetCost(sequenceI[i], '*'),
-                    I = sequenceI[i], 
-                    J = '*', 
-                    PrevI = i-1, 
-                    PrevJ = null
-                };
-            }
+            if(i > 0 && j > 0)
+                match = tableParser.GetCost(sequenceI[i - 1], sequenceJ[j - 1]) + arr[i - 1, j - 1].Cost;
             
-            var match = tableParser.GetCost(sequenceI[i], sequenceJ[j]) + arr[i - 1, j - 1].Cost;
+            if(i > 0)
+                caseI = tableParser.GetMismatchCost(sequenceI[i - 1]) + arr[i - 1, j].Cost;
+            
+            if(j > 0)
+                caseII = tableParser.GetMismatchCost(sequenceJ[j - 1]) + arr[i, j - 1].Cost;
 
-            var caseI = tableParser.GetCost(sequenceI[i], '*') + arr[i - 1 , j].Cost;
-
-            var caseII = tableParser.GetCost('*', sequenceJ[j]) + arr[i, j - 1].Cost;
-
-            if (match >= caseI && match >= caseII)
-            {
-                return new SeqRes
-                {
-                    Cost = match,
-                    I = sequenceI[i],
-                    J = sequenceJ[j],
-                    PrevI = i - 1,
-                    PrevJ = j - 1
-                };
-            } else if (caseI >= match && caseI >= caseII)
+            if (caseI > match && caseI >= caseII)
             {
                 return new SeqRes
                 {
                     Cost = caseI,
-                    I = sequenceI[i],
-                    J = '*',
+                    I = sequenceI[i - 1],
+                    J = OutputMismatch,
                     PrevI = i - 1,
                     PrevJ = j
                 };
-            } else
+            }
+            
+            if (caseII > match && caseII > caseI)
             {
                 return new SeqRes
                 {
                     Cost = caseII,
-                    I = '*',
-                    J = sequenceJ[j],
+                    I = OutputMismatch,
+                    J = sequenceJ[j - 1],
                     PrevI = i,
                     PrevJ = j - 1
                 };
             }
+            return new SeqRes
+                {
+                    Cost = match,
+                    I = sequenceI[i - 1],
+                    J = sequenceJ[j - 1],
+                    PrevI = i - 1,
+                    PrevJ = j - 1
+                };
         }
 
-        private static (string s1, string s2) BuildString(SeqRes[,] arr, SeqRes seqRes)
+        private static (string s1, string s2) BuildStrings(SeqRes[,] arr, SeqRes seqRes)
         {
             var chars1 = new List<char> { seqRes.I };
             var chars2 = new List<char> { seqRes.J };
 
-            (chars1, chars2) = BuildString(arr, seqRes.PrevI, seqRes.PrevJ, chars1, chars2);
-            chars1.Reverse();
-            chars2.Reverse();
+            (chars1, chars2) = BuildStrings(arr, seqRes.PrevI, seqRes.PrevJ, chars1, chars2);
 
             return (new string(chars1.ToArray()), new string(chars2.ToArray()));
         }
 
-        private static (List<char> chars1, List<char> chars2) BuildString(SeqRes[,] arr, int? i, int? j, List<char> chars1, List<char> chars2)
+        private static (List<char> chars1, List<char> chars2) BuildStrings(SeqRes[,] arr, int? i, int? j, List<char> chars1, List<char> chars2)
         {
             char? cI = null;
             char? cJ = null;
@@ -184,32 +170,26 @@
 
             if (i == null)
             {
-                cI = '*';
+                cI = OutputMismatch;
                 i = 0;
             }
 
             if (j == null)
             {
-                cJ = '*';
+                cJ = OutputMismatch;
                 j = 0;
             }
 
             var seqRes = arr[i.Value, j.Value];
 
-            if (cI == null)
-            {
-                cI = seqRes.I;
-            }
+            cI ??= seqRes.I;
             
-            if (cJ == null)
-            {
-                cJ = seqRes.J;
-            }
+            cJ ??= seqRes.J;
             
-            chars1.Add(cI.Value);
-            chars2.Add(cJ.Value);
+            chars1.Insert(0, cI.Value);
+            chars2.Insert(0, cJ.Value);
 
-            return BuildString(arr, seqRes.PrevI, seqRes.PrevJ, chars1, chars2);
+            return BuildStrings(arr, seqRes.PrevI, seqRes.PrevJ, chars1, chars2);
         }
 
         private class SeqRes
@@ -229,56 +209,61 @@
         private class Sequence
         {
             public string Name { get; set; }
-            public List<char> SequenceString { get; set; }
+            public string SequenceString { get; set; }
         }
-    }
-
-    public class TableParser
-    {
-        private static readonly StreamReader reader = new StreamReader("../../../../../data/BLOSUM62.txt");
-        private static readonly Dictionary<char, Dictionary<char, int>> table = new Dictionary<char, Dictionary<char, int>>();
-
-        public TableParser()
+        
+        public class TableParser
         {
-            LoadTable();
-        }
+            private static readonly StreamReader reader = new StreamReader("../../../../../data/BLOSUM62.txt");
+            private static readonly Dictionary<char, Dictionary<char, int>> table = new Dictionary<char, Dictionary<char, int>>();
 
-        private void LoadTable()
-        {
-            SkipHeaders();
-
-            // first line are main entries in dict
-            var chars = reader.ReadLine().Trim().Split("  ", StringSplitOptions.RemoveEmptyEntries);
-            foreach (var c in chars.Select(char.Parse))
+            public TableParser()
             {
-                table.Add(c, new Dictionary<char, int>());
+                LoadTable();
             }
 
-            var line = "";
-            while ((line = reader.ReadLine()) != null)
+            private void LoadTable()
             {
-                var mappings = line.Trim().Split(new[] { " ", "  " }, StringSplitOptions.RemoveEmptyEntries);
-                var second = char.Parse(mappings[0]);
+                SkipHeaders();
 
-                for (var i = 1; i < mappings.Length; i++)
+                // first line are main entries in dict
+                var chars = reader.ReadLine().Trim().Split("  ", StringSplitOptions.RemoveEmptyEntries);
+                foreach (var c in chars.Select(char.Parse))
                 {
-                    var cost = int.Parse(mappings[i]);
-                    table.ElementAt(i - 1).Value.Add(second, cost);
+                    table.Add(c, new Dictionary<char, int>());
+                }
+
+                var line = "";
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var mappings = line.Trim().Split(new[] { " ", "  " }, StringSplitOptions.RemoveEmptyEntries);
+                    var second = char.Parse(mappings[0]);
+
+                    for (var i = 1; i < mappings.Length; i++)
+                    {
+                        var cost = int.Parse(mappings[i]);
+                        table.ElementAt(i - 1).Value.Add(second, cost);
+                    }
                 }
             }
-        }
 
-        private void SkipHeaders()
-        {
-            while ((char) reader.Peek() == '#')
+            private void SkipHeaders()
             {
-                reader.ReadLine();
+                while ((char) reader.Peek() == '#')
+                {
+                    reader.ReadLine();
+                }
             }
-        }
 
-        public int GetCost(char a, char b)
-        {
-            return table[char.ToUpper(a)][char.ToUpper(b)];
+            public int GetCost(char a, char b)
+            {
+                return table[char.ToUpper(a)][char.ToUpper(b)];
+            }
+            
+            public int GetMismatchCost(char a)
+            {
+                return table[char.ToUpper(a)][BlossumMismatch];
+            }
         }
     }
 }
