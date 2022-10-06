@@ -51,30 +51,30 @@ public class Program
         var seq1 = Sequences[name1];
         var seq2 = Sequences[name2];
 
-        var Cache = new (int value, char symbols, byte trace)[seq1.Length+1, seq2.Length+1];
+        var Cache = new (int value, byte trace)[seq1.Length+1, seq2.Length+1];
 
         var deltaValue = Value(_,A);
 
         var i = 0;
         var j = 0;
-        while(i < seq1.Length+1) {Cache[i,0] = (i * deltaValue, ' ', 0b00); i++;}
-        while(j < seq2.Length+1) {Cache[0,j] = (j * deltaValue, ' ', 0b00); j++;}
+        while(i < seq1.Length+1) {Cache[i,0] = (i * deltaValue, 0b00); i++;}
+        while(j < seq2.Length+1) {Cache[0,j] = (j * deltaValue, 0b00); j++;}
 
         i = 1;
         while(i <= seq1.Length) {
             j = 1;
             while(j <= seq2.Length) {
-
+                
                 var match = Value(seq1[i-1], seq2[j-1]) + Cache[i-1, j-1].value;
                 var move1 = deltaValue + Cache[i-1,j].value;
                 var move2 = deltaValue + Cache[i,j-1].value;
 
                 if (move1 >= match && move1 >= move2) 
-                    Cache[i,j] = (move1, Helpers.combine(seq1[i-1],_), 0b10);
+                    Cache[i,j] = (move1, 0b10);
                 else if (move2 >= match && move2 >= move1) 
-                    Cache[i,j] = (move2, Helpers.combine(_,seq2[j-1]), 0b01);
+                    Cache[i,j] = (move2, 0b01);
                 else 
-                    Cache[i,j] = (match, Helpers.combine(seq1[i-1],seq2[j-1]), 0b11);
+                    Cache[i,j] = (match, 0b11);
 
                 j++;
             }
@@ -88,13 +88,33 @@ public class Program
         j = seq2.Length;
         while(true) {
             var entry = Cache[i,j];
-            if (entry.trace == 0b00) break;
-            var (seq1e, seq2e) = Helpers.split(entry.symbols);
-            sbi.Append(seq1e);
-            sbj.Append(seq2e);
-            if ((entry.trace & 0b10) != 0) i--;
-            if ((entry.trace & 0b01) != 0) j--;
+
+            if (entry.trace == 0b00) {
+                while(i > 0) {
+                    sbi.Append(Helpers.toChar(seq1[i-1]));
+                    sbj.Append('-');
+                    i--;
+                };
+                while(j > 0) {
+                    sbi.Append('-');
+                    sbj.Append(Helpers.toChar(seq2[j-1]));
+                    j--;
+                }
+                break;
+            }
+
+            if ((entry.trace & 0b10) != 0) {
+                sbi.Append(Helpers.toChar(seq1[i-1]));
+                i--;
+            } 
+            else sbi.Append("-");
+            if ((entry.trace & 0b01) != 0) {
+                sbj.Append(Helpers.toChar(seq2[j-1]));
+                j--;
+            }
+            else sbj.Append("-");
         }
+
         
         Console.WriteLine(new string(sbi.ToString().Reverse().ToArray()));
         Console.WriteLine(new string(sbj.ToString().Reverse().ToArray()));
