@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
 namespace Gorilla
 {
@@ -117,17 +116,6 @@ namespace Gorilla
             return (result0, result1);
         }
 
-        private static void Print(int[,] m)
-        {
-            for (int y = 0; y < m.GetLength(1); y++)
-            {
-                for (int x = 0; x < m.GetLength(0); x++)
-                    Console.Write(m[x, y] + "\t");
-                Console.WriteLine();
-            }
-            Console.WriteLine();
-        }
-
         private static (int, string, string) Solve(string str0, string str1)
         {
             int[,] m = new int[str0.Length + 1, str1.Length + 1];
@@ -145,28 +133,7 @@ namespace Gorilla
                         m[i - 1, j - 1];
                     int gap0 = gapCost + m[i - 1, j];
                     int gap1 = gapCost + m[i, j - 1];
-                    int deltaI = 0, deltaJ = 0;
-                    int cost;
-                    if (match >= gap0 && match >= gap1)
-                    {
-                        cost = match;
-                        deltaI = 1;
-                        deltaJ = 1;
-                    }
-                    else if (gap0 >= match && gap0 >= gap1)
-                    {
-                        cost = gap0;
-                        deltaI = 1;
-                    }
-                    else if (gap1 >= match && gap1 >= gap0)
-                    {
-                        cost = gap1;
-                        deltaJ = 1;
-                    }
-                    else
-                    {
-                        throw new Exception("This should never happen");
-                    }
+                    int cost = Math.Max(match, Math.Max(gap0, gap1));
                     m[i, j] = cost;
                 }
             }
@@ -214,35 +181,6 @@ namespace Gorilla
             return results;
         }
 
-        private static Dictionary<(string, string), Result> ReadExpected(
-            string file)
-        {
-            var expected = new Dictionary<(string, string), Result>();
-            using var reader = new StreamReader(file);
-
-            string line;
-            while ((line = reader.ReadLine()) != null)
-            {
-                string[] words = line.Split(
-                    ' ',
-                    StringSplitOptions.RemoveEmptyEntries |
-                    StringSplitOptions.TrimEntries);
-                int expectedAlignment = int.Parse(words[1]);
-                string[] names = words[0].Split(
-                    "--",
-                    StringSplitOptions.RemoveEmptyEntries |
-                    StringSplitOptions.TrimEntries);
-                string name0 = names[0];
-                string name1 = names[1].Substring(0, names[1].Length - 1);
-                string s0 = reader.ReadLine();
-                string s1 = reader.ReadLine();
-                var e = new Result(expectedAlignment, name0, name1, s0, s1);
-                expected.Add((name0, name1), e);
-                expected.Add((name1, name0), e);
-            }
-            return expected;
-        }
-
         private static void PrintResults(List<Result> results)
         {
             foreach (var result in results)
@@ -254,50 +192,11 @@ namespace Gorilla
             }
         }
 
-        private static void CompareResults(
-            Dictionary<(string, string), Result> expected,
-            List<Result> actual)
-        {
-            foreach (var result in actual)
-            {
-                expected.TryGetValue((result.name0, result.name1), out var e);
-                if (result.cost != e.cost)
-                {
-                    Console.WriteLine(
-                        $"Incorrect cost on test case {e.name0}--{e.name1}." +
-                        $" Was {result.cost}, expected {e.cost} " +
-                        $"(difference {Math.Abs(e.cost - result.cost)}).");
-                }
-                int resultCost = AlignmentCosts(result.alignment0, result.alignment1);
-                int expectedCost = AlignmentCosts(e.alignment0, e.alignment1);
-                if (resultCost != expectedCost)
-                    Console.WriteLine(
-                        $"Incorrect alignment costs. " +
-                        $"Expected alignment cost: {expectedCost}. Actual alignment cost {resultCost}.");
-                Console.WriteLine();
-            }
-        }
-
-        private static int AlignmentCosts(string alignment0, string alignment1)
-        {
-            int cost = 0;
-            for (int i = 0; i < alignment0.Length; i++)
-            {
-                if (alignment0[i] != '-' && alignment1[i] != '-')
-                    cost += costs[alignment0[i], alignment1[i]];
-                else
-                    cost += gapCost;
-            }
-            return cost;
-        }
-
         public static void Main(string[] args)
         {
             ReadCosts();
             ReadInput(new StreamReader("..\\..\\data\\HbB_FASTAs-in.txt"));
             var actual = Solve();
-            var expected = ReadExpected("..\\..\\data\\HbB_FASTAs-out.txt");
-            CompareResults(expected, actual);
             PrintResults(actual);
         }
     }
