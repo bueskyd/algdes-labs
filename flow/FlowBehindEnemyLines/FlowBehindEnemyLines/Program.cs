@@ -69,7 +69,7 @@
 
         private static int Remaining(int edgeId)
         {
-            return (int)capacities[edgeId] - Math.Abs(flows[edgeId]);
+            return capacities[edgeId] - Math.Abs(flows[edgeId]);
         }
 
         private static (List<Edge>, int) FindPath()
@@ -135,7 +135,6 @@
 
         private static List<Edge> FindMinCut()
         {
-            List<Edge> minimumCut = new();
             List<bool> visited = new();
             for (int i = 0; i < flows.Count; i++)
                 visited.Add(false);
@@ -144,18 +143,23 @@
             while (queue.Count > 0)
             {
                 int node = queue.Dequeue();
+                if (visited[node])
+                    continue;
+                visited[node] = true;
                 var adjacent = graph.adjacent[node];
                 foreach (Edge edge in adjacent)
                 {
-                    if (visited[edge.id])
+                    if (!edge.isResidualEdge && flows[edge.id] == capacities[edge.id])
                         continue;
-                    visited[edge.id] = true;
-                    if (capacities[edge.id] == -1)
-                        queue.Enqueue(edge.to);
-                    else
-                        minimumCut.Add(edge);
+                    queue.Enqueue(edge.to);
                 }
             }
+            List<Edge> minimumCut = new();
+            for (int i = 0; i < visited.Count; i++)
+                if (visited[i])
+                    foreach (Edge edge in graph.adjacent[i])
+                        if (!visited[edge.to])
+                            minimumCut.Add(edge);
             return minimumCut;
         }
 
