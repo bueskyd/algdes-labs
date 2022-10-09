@@ -25,7 +25,7 @@
     {
         private static Graph graph = new();
         private static List<int> flows = new();
-        private static List<int?> capacities = new();
+        private static List<int> capacities = new();
 
         private static void ReadInput()
         {
@@ -43,7 +43,7 @@
                 int a = int.Parse(words[0]);
                 int b = int.Parse(words[1]);
                 int c = int.Parse(words[2]);
-                capacities.Add(c != -1 ? c : null);
+                capacities.Add(c);
                 Edge edge = new()
                 {
                     from = a,
@@ -107,13 +107,13 @@
             };
             int prev = from[graph.sink].Item2;
             int bottleneck = int.MaxValue;
-            if (capacities[path[0].id] is not null)
+            if (capacities[path[0].id] != -1)
                 bottleneck = Math.Min(bottleneck, Remaining(path[0].id));
 
             while (prev != graph.source)
             {
                 Edge edge = from[prev].Item1;
-                if (capacities[edge.id] is not null)
+                if (capacities[edge.id] != -1)
                     bottleneck = Math.Min(bottleneck, Remaining(edge.id));
                 path.Add(edge);
                 prev = from[prev].Item2;
@@ -125,7 +125,7 @@
         {
             foreach (Edge edge in path)
             {
-                //if (capacities[edge.id] is not null)
+                if (capacities[edge.id] != -1)
                     if (edge.isResidualEdge)
                         flows[edge.id] -= bottleneck;
                     else
@@ -136,9 +136,9 @@
         private static List<Edge> FindMinCut()
         {
             List<Edge> minimumCut = new();
-            List<(Edge, int)> from = new();
-            for (int i = 0; i < graph.adjacent.Count; i++)
-                from.Add((null, -1));
+            List<bool> visited = new();
+            for (int i = 0; i < flows.Count; i++)
+                visited.Add(false);
             Queue<int> queue = new();
             queue.Enqueue(graph.source);
             while (queue.Count > 0)
@@ -147,13 +147,13 @@
                 var adjacent = graph.adjacent[node];
                 foreach (Edge edge in adjacent)
                 {
-                    if (from[edge.to].Item2 != -1)
+                    if (visited[edge.id])
                         continue;
-                    from[edge.to] = (edge, node);
-                    if (Math.Abs(flows[edge.id]) == capacities[edge.id])
-                        minimumCut.Add(edge);
-                    else
+                    visited[edge.id] = true;
+                    if (capacities[edge.id] == -1)
                         queue.Enqueue(edge.to);
+                    else
+                        minimumCut.Add(edge);
                 }
             }
             return minimumCut;
@@ -170,7 +170,7 @@
         private static bool IsValid()
         {
             for (int i = 0; i < capacities.Count; i++)
-                if (capacities[i] is not null && flows[i] > capacities[i])
+                if (capacities[i] != -1 && flows[i] > capacities[i])
                     return false;
             List<int> nodeFlows = new();
             foreach (var _ in graph.adjacent)
@@ -204,7 +204,7 @@
             int maxFlow = FindMaxFlow(minimumCut);
             Console.WriteLine(maxFlow);
             foreach (Edge edge in minimumCut)
-                Console.WriteLine($"{edge.from} {edge.to} {capacities[edge.id]}");
+                Console.WriteLine($"{edge.from} {edge.to} {Math.Abs(flows[edge.id])}");
         }
 
         public static void Main()
