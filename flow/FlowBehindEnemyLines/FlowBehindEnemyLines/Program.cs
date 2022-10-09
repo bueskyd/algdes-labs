@@ -167,28 +167,6 @@
             return maxFlow;
         }
 
-        private static bool IsValid()
-        {
-            for (int i = 0; i < capacities.Count; i++)
-                if (capacities[i] != -1 && flows[i] > capacities[i])
-                    return false;
-            List<int> nodeFlows = new();
-            foreach (var _ in graph.adjacent)
-                nodeFlows.Add(0);
-            foreach (var adjacent in graph.adjacent)
-            {
-                foreach (var edge in adjacent)
-                {
-                    nodeFlows[edge.from] -= flows[edge.id];
-                    nodeFlows[edge.to] += flows[edge.id];
-                }
-            }
-            foreach (int flow in nodeFlows)
-                if (flow != 0)
-                    return false;
-            return true;
-        }
-
         private static void Solve()
         {
             while (true)
@@ -197,8 +175,6 @@
                 if (path is null)
                     break;
                 Augment(path, bottleneck);
-                if (!IsValid())
-                    throw new Exception("Help");
             }
             var minimumCut = FindMinCut();
             int maxFlow = FindMaxFlow(minimumCut);
@@ -210,9 +186,7 @@
         public static void Main()
         {
             ReadInput();
-            Console.WriteLine();
             Solve();
-            Console.WriteLine();
         }
     }
 }
