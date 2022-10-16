@@ -7,11 +7,13 @@ using System.Collections.Generic;
  
 class Graph
 {
-    public static void Main()
+    private readonly int[,] _graph;
+    
+    public Graph()
     {
         // number of nodes
         var n = int.Parse(Console.ReadLine());
-        var edges = new int[n, n];
+        _graph = new int[n, n];
             
         for (var i = 0; i < n; i++)
         {
@@ -28,17 +30,20 @@ class Graph
             var to = int.Parse(line[1]);
             var capacity = int.Parse(line[2]);
             
-            edges[from, to] = capacity == -1 ? int.MaxValue : capacity;
-            edges[to, from] = capacity == -1 ? int.MaxValue : capacity;
+            _graph[from, to] = capacity == -1 ? int.MaxValue : capacity;
+            _graph[to, from] = capacity == -1 ? int.MaxValue : capacity;
         }
-        
-        FordFulkerson(edges);
+    }
+    public static void Main()
+    {
+        var graph = new Graph();
+        graph.FordFulkerson();
     }
 
-    private static void FordFulkerson(int[,] graph)
+    public void FordFulkerson()
     {
         // create the residual graph
-        var residualGraph = CreateResidualGraph(graph);
+        var residualGraph = CreateResidualGraph(_graph);
         
         Augment(residualGraph);
 
@@ -47,22 +52,22 @@ class Graph
 
         // or the flow
         var minCutCapacity = 0;
-        for (var i = 0; i < graph.GetLength(0); i++)
+        for (var i = 0; i < _graph.GetLength(0); i++)
         {
-            for (var j = 0; j < graph.GetLength(1); j++)
+            for (var j = 0; j < _graph.GetLength(1); j++)
             {
                 // if the edge is included in the minimum cut
-                if (graph[i, j] > 0 && isVisited[i] && !isVisited[j])
+                if (_graph[i, j] > 0 && isVisited[i] && !isVisited[j])
                 {
                     Console.WriteLine(i + " - " + j);
-                    minCutCapacity += graph[i, j];
+                    minCutCapacity += _graph[i, j];
                 }
             }
         }
         Console.WriteLine(minCutCapacity);
     }
     
-    private static int[,] CreateResidualGraph(int[,] graph)
+    private int[,] CreateResidualGraph(int[,] graph)
     {
         var residualGraph = new int[graph.GetLength(0), graph.GetLength(1)];
         
@@ -77,7 +82,7 @@ class Graph
         return residualGraph;
     }
 
-    private static void Augment(int[,] residualGraph)
+    private void Augment(int[,] residualGraph)
     {
         var sink = residualGraph.GetLength(0) - 1;
         
@@ -96,7 +101,7 @@ class Graph
         }
     }
     
-    private static int[] BFS(int[,] residualGraph)
+    private int[] BFS(int[,] residualGraph)
     {
         var n = residualGraph.GetLength(0);
         var visited = new bool[n];
@@ -128,7 +133,7 @@ class Graph
         return path;
     }
 
-    private static int FindBottleNeck(int[,] edges, int[] path)
+    private int FindBottleNeck(int[,] graph, int[] path)
     {
         var sink = path[^1];
         var bottleNeck = int.MaxValue;
@@ -136,13 +141,13 @@ class Graph
         for (var i = sink; i != 0; i = path[i])
         {
             var j = path[i];
-            bottleNeck = Math.Min(bottleNeck, edges[j, i]);
+            bottleNeck = Math.Min(bottleNeck, graph[j, i]);
         }
 
         return bottleNeck;
     }
     
-    private static bool[] DFS(int[,] residualGraph)
+    private bool[] DFS(int[,] residualGraph)
     {
         var n = residualGraph.GetLength(0);
         var visited = new bool[n];
