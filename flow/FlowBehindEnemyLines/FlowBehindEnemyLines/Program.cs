@@ -7,11 +7,6 @@
         public int to;
         public int id;
         public bool isResidualEdge;
-
-        public override string ToString()
-        {
-            return $"({from}, {to}, {isResidualEdge})";
-        }
     }
 
     public class Graph
@@ -29,17 +24,18 @@
 
         private static void ReadInput()
         {
-            int n = int.Parse(Console.ReadLine());
+            using var reader = new StreamReader("..\\..\\data\\rail.txt");
+            int n = int.Parse(reader.ReadLine());
             for (int i = 0; i < n; i++)
             {
-                Console.ReadLine();
+                reader.ReadLine();
                 graph.adjacent.Add(new List<Edge>());
             }
-            int m = int.Parse(Console.ReadLine());
+            int m = int.Parse(reader.ReadLine());
             for (int i = 0; i < m; i++)
             {
                 flows.Add(0);
-                string[] words = Console.ReadLine().Split(' ');
+                string[] words = reader.ReadLine().Split(' ');
                 int a = int.Parse(words[0]);
                 int b = int.Parse(words[1]);
                 int c = int.Parse(words[2]);
@@ -149,7 +145,7 @@
                 var adjacent = graph.adjacent[node];
                 foreach (Edge edge in adjacent)
                 {
-                    if (!edge.isResidualEdge && flows[edge.id] == capacities[edge.id])
+                    if (!edge.isResidualEdge && Math.Abs(flows[edge.id]) == capacities[edge.id])
                         continue;
                     queue.Enqueue(edge.to);
                 }
