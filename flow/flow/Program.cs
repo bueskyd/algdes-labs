@@ -23,30 +23,26 @@ public class Program
 
         var flow_graph = new FlowGraph(nodes);
 
-        var (success, path) = flow_graph.Path(0,54);
-        System.Console.WriteLine(success);
-        foreach(var p in path) System.Console.WriteLine(id_to_name[p]);
-
-        System.Console.WriteLine(flow_graph.MaxFlow(0, 54));
+        var cut = flow_graph.MinCut(0, 54);
+        var sum = 0;
+        foreach(var (from, to, flow) in cut) {
+            sum += flow;
+            System.Console.WriteLine($"{from} - {to}: {flow}");
+        }
+        System.Console.WriteLine(sum);
     }
 }
 
 public class Edge
 {
     public readonly int to;
-    public int capacity;
+    public readonly int capacity;
     public int flow;
 
     public Edge(int t, int c) {
         to = t;
         capacity = c;
         flow = 0;
-    }
-
-    public bool Augment(int by) {
-        if (flow + by > capacity || flow + by < 0) return false; 
-        flow += by;
-        return true;
     }
 }
 
@@ -69,15 +65,16 @@ public class FlowGraph
 {
     private List<Node> graph;
 
+
     public FlowGraph(List<Node> ns) {
         graph = ns;
     }
 
     public (bool, int[]) Path(int from, int to) {
-        return PathFromTo(from, to, new HashSet<int>());
+        return _Path(from, to, new HashSet<int>());
     }
 
-    private (bool, int[]) PathFromTo(int from, int to, HashSet<int> prev) {
+    private (bool, int[]) _Path(int from, int to, HashSet<int> prev) {
 
         var connections = graph[from].Connections();
 
@@ -88,7 +85,7 @@ public class FlowGraph
             if (connection.Key == to) return (true, new int[] {to});
 
             prev.Add(from);
-            var (success, path) = PathFromTo(connection.Value.to, to, prev);
+            var (success, path) = _Path(connection.Value.to, to, prev);
             if (success) return (true, path.ToList().Prepend(connection.Key).ToArray());
             prev.Remove(from);
         }
@@ -98,6 +95,20 @@ public class FlowGraph
 
     public int[] Connections(int node) {
         return graph[node].Connections().Select(e => e.Key).ToArray();
+    }
+
+    public HashSet<int> Reachable(int from) {
+        return _Reachable(from, new HashSet<int>());
+    }
+
+    public HashSet<int> _Reachable(int from, HashSet<int> set) {
+        set.Add(from);
+        foreach(var c in graph[from].Connections()) {
+            if (c.Value.capacity - c.Value.flow == 0) continue;
+            if (set.Contains(c.Key)) continue;
+            _Reachable(c.Key, set);
+        }
+        return set;
     }
 
     public int PathMinRemainingCapacity(int[] path) {
@@ -115,19 +126,27 @@ public class FlowGraph
             var forward = graph[path[i-1]].Connections()[path[i]];
             var backward = graph[forward.to].Connections()[path[i-1]];
             forward.flow += by;
-            if (backward.capacity != -1) backward.capacity += by;
+            backward.flow -= by;
         }
     }
 
-    public int MaxFlow(int from, int to) {
+    public (int, int, int)[] MinCut(int from, int to) {
         while(true) {
             var (success, path) = Path(from, to);
             if (!success) break;
             AugmentPath(path, PathMinRemainingCapacity(path));
         }
 
-        var sum = 0;
-        foreach(var e in graph[from].Connections()) sum += e.Value.flow;
-        return sum;
+        var mincut = new List<(int from, int to, int flow)>();
+        var reachable = Reachable(from);
+        foreach(var node in reachable) {
+            var connections = graph[node].Connections();
+            foreach(var connection in connections) {
+                if (reachable.Contains(connection.Key)) continue;
+                mincut.Add((node, connection.Key, connection.Value.flow));
+            }
+        }
+
+        return mincut.ToArray();
     }
 }
