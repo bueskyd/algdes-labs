@@ -2,6 +2,7 @@
 public class Program
 {
     public static readonly Dictionary<int, string> id_to_name = new Dictionary<int, string>();
+    public static readonly bool bidirect = true;
 
     public static void Main(string[] args) {
         var lines = File.ReadAllLines(args[0]);
@@ -18,12 +19,13 @@ public class Program
         for(int i = 1; i < edge_count; i++) {
             var data = lines[node_count+1+i].Split(" ").Select(e => int.Parse(e)).ToArray();
             nodes[data[0]].Connect(data[1], data[2]);
-            nodes[data[1]].Connect(data[0], data[2]);
+            if (bidirect) nodes[data[1]].Connect(data[0], data[2]);
+            else nodes[data[1]].Connect(data[0], 0);
         }
 
         var flow_graph = new FlowGraph(nodes);
 
-        var cut = flow_graph.MinCut(0, 54);
+        var cut = flow_graph.MinCut(0, node_count-1);
         var sum = 0;
         foreach(var (from, to, flow) in cut) {
             sum += flow;
@@ -139,6 +141,7 @@ public class FlowGraph
 
         var mincut = new List<(int from, int to, int flow)>();
         var reachable = Reachable(from);
+        System.Console.WriteLine(reachable.Count);
         foreach(var node in reachable) {
             var connections = graph[node].Connections();
             foreach(var connection in connections) {
