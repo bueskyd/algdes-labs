@@ -21,7 +21,7 @@ public class Program
         var graph = new int[node_count, node_count];
         var edge_count = int.Parse(lines[node_count+1]);
         var edge_data = new List<(int, int, int)>();
-        for(int i = 1; i < edge_count; i++) {
+        for(int i = 1; i <= edge_count; i++) {
             var data = lines[node_count+1+i].Split(" ").Select(e => int.Parse(e)).ToArray();
             edge_data.Add((data[0], data[1], data[2]));
             if (bidirect) edge_data.Add((data[1], data[0], data[2]));
@@ -68,6 +68,7 @@ public class FlowGraph
             var edges = graph[node].Edges();
             foreach(var connection in edges) {
                 if (reachable.Contains(connection.Key)) continue;
+                if (connection.Value.edge.flow == 0) continue;
                 mincut.Add((node, connection.Key, connection.Value.edge.flow));
             }
         }

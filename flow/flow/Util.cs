@@ -36,28 +36,34 @@ public static class Util
     }
 
     public static (bool, int[]) Path(int from, int to, Node[] graph) {
-        return _Path(from, to, graph, new HashSet<int>());
-    }
 
-    private static (bool, int[]) _Path(int from, int to, Node[] graph, HashSet<int> prev) {
+        var path = new int[graph.Length];
+        var visited = new bool[graph.Length];
+        var stack = new Stack<int>();
+        stack.Push(from);
 
-        var connections = graph[from].Edges();
+        while(stack.Count > 0) {
+            var node = stack.Pop();
+            visited[node] = true;
+            foreach(var c in graph[node].Edges()) {
+                if (visited[c.Key]) continue;
+                if (c.Value.rev && c.Value.edge.flow == 0) continue;
+                if (!c.Value.rev && c.Value.edge.capacity - c.Value.edge.flow == 0) continue;
 
-        foreach(var c in connections) {
-            if (c.Value.rev) {
-                if (c.Value.edge.flow == 0) continue;
+                stack.Push(c.Key);
+                path[c.Key] = node;
+
+                if(c.Key == to) {
+                    var s = new Stack<int>();
+                    var p = to;
+                    while(true) {
+                        s.Push(p);
+                        if (p == from) return (true, s.ToArray());
+                        p = path[p];
+                    }
+                }
             }
-            else {
-                if (c.Value.edge.capacity - c.Value.edge.flow == 0) continue;
-            }
-            if (prev.Contains(c.Key)) continue;
-            if (c.Key == to) return (true, new int[] {to});
-
-            prev.Add(from);
-            var (success, path) = _Path(c.Key, to, graph, prev);
-            if (success) return (true, path.ToList().Prepend(c.Key).ToArray());
-            prev.Remove(from);
-        }
+        } 
 
         return (false, new int[0]);
     }
