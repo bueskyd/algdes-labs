@@ -11,23 +11,32 @@ public static class Util
     private static HashSet<int> _Reachable(int from, Node[] graph, HashSet<int> set) {
         set.Add(from);
         foreach(var c in graph[from].Edges()) {
-            if (c.Value.rev) continue;
-            if (c.Value.edge.capacity - c.Value.edge.flow == 0) continue;
-            if (set.Contains(c.Key)) continue;
-            _Reachable(c.Key, graph, set);
+            if (c.rev) continue;
+            if (c.edge.capacity - c.edge.flow == 0) continue;
+            if (set.Contains(c.to)) continue;
+            _Reachable(c.to, graph, set);
         }
         return set;
     }
 
-    public static int PathMinRemainingCapacity(int[] path, Node[] graph) {
+    public static (int to, bool rev, Edge edge) FindConnection(bool rev, int to, List<(int to, bool rev, Edge edge)> edges) {
+        foreach(var e in edges) {
+            if (e.rev == rev && e.to == to) return e;
+        }
+        return (-1, false, null);
+    }
+
+    public static int PathMinRemainingCapacity((bool rev, int to)[] path, Node[] graph) {
         var minRemainingCap = int.MaxValue;
         for(int i = 1; i < path.Length; i++) {
-            var connection = graph[path[i-1]].Edges()[path[i]];
+            var connection = FindConnection(path[i-1].rev, path[i].to, graph[path[i-1].to].Edges());
             if (connection.rev) {
+                if (connection.edge.capacity == -1) continue;
                 if (connection.edge.flow < minRemainingCap)
                     minRemainingCap = connection.edge.flow;
             }
             else {
+                if (connection.edge.capacity == -1) continue;
                 if (connection.edge.capacity - connection.edge.flow < minRemainingCap) 
                     minRemainingCap = connection.edge.capacity - connection.edge.flow;
             }
@@ -35,9 +44,9 @@ public static class Util
         return minRemainingCap;
     }
 
-    public static (bool, int[]) Path(int from, int to, Node[] graph) {
+    public static (bool, (bool, int)[]) Path(int from, int to, Node[] graph) {
 
-        var path = new int[graph.Length];
+        var path = new (bool rev, int to)[graph.Length];
         var visited = new bool[graph.Length];
         var stack = new Stack<int>();
         stack.Push(from);
@@ -46,31 +55,31 @@ public static class Util
             var node = stack.Pop();
             visited[node] = true;
             foreach(var c in graph[node].Edges()) {
-                if (visited[c.Key]) continue;
-                if (c.Value.rev && c.Value.edge.flow == 0) continue;
-                if (!c.Value.rev && c.Value.edge.capacity - c.Value.edge.flow == 0) continue;
+                if (visited[c.to]) continue;
+                if (c.rev && c.edge.flow == 0) continue;
+                if (!c.rev && c.edge.capacity - c.edge.flow == 0) continue;
 
-                stack.Push(c.Key);
-                path[c.Key] = node;
+                stack.Push(c.to);
+                path[c.to] = (c.rev, node);
 
-                if(c.Key == to) {
-                    var s = new Stack<int>();
-                    var p = to;
+                if(c.to == to) {
+                    var s = new Stack<(bool, int)>();
+                    var p = path[to];
                     while(true) {
                         s.Push(p);
-                        if (p == from) return (true, s.ToArray());
-                        p = path[p];
+                        if (p.to == from) return (true, s.ToArray());
+                        p = path[p.to];
                     }
                 }
             }
         } 
 
-        return (false, new int[0]);
+        return (false, new (bool,int)[0]);
     }
 
-    public static void AugmentPath(int[] path, int by, Node[] graph) {
+    public static void AugmentPath((bool rev, int to)[] path, int by, Node[] graph) {
         for(int i = 1; i < path.Length; i++) {
-            var connection = graph[path[i-1]].Edges()[path[i]];
+            var connection = FindConnection(path[i-1].rev, path[i].to, graph[path[i-1].to].Edges());
             
             if (connection.rev) {
                 connection.edge.flow -= by;

@@ -6,7 +6,7 @@ namespace Program;
 public class Program
 {
     public static readonly Dictionary<int, string> id_to_name = new Dictionary<int, string>();
-    public static readonly bool bidirect = false;
+    public static readonly bool bidirect = true;
 
     public static void Main(string[] args) {
         var lines = File.ReadAllLines(args[0]);
@@ -67,9 +67,9 @@ public class FlowGraph
         foreach(var node in reachable) {
             var edges = graph[node].Edges();
             foreach(var connection in edges) {
-                if (reachable.Contains(connection.Key)) continue;
-                if (connection.Value.edge.flow == 0) continue;
-                mincut.Add((node, connection.Key, connection.Value.edge.flow));
+                if (reachable.Contains(connection.to)) continue;
+                if (connection.edge.flow == 0) continue;
+                mincut.Add((node, connection.to, connection.edge.flow));
             }
         }
 

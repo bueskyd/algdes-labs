@@ -14,15 +14,15 @@ public class Edge
 
 public class Node
 {
-    private Dictionary<int, (bool, Edge)> edges = new Dictionary<int, (bool, Edge)>();
+    private List<(int, bool, Edge)> edges = new List<(int, bool, Edge)>();
 
     public Node() {}
 
     public void AddEdge(int to, bool rev, Edge e) {
-        edges.Add(to, (rev, e));
+        edges.Add((to, rev, e));
     }
 
-    public Dictionary<int, (bool rev, Edge edge)> Edges() {
+    public List<(int to, bool rev, Edge edge)> Edges() {
         return edges;
     }
 }
