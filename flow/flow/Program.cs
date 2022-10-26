@@ -6,7 +6,7 @@ namespace Program;
 public class Program
 {
     public static readonly Dictionary<int, string> id_to_name = new Dictionary<int, string>();
-    public static readonly bool bidirect = true;
+    public static readonly bool bidirect = false;
 
     public static void Main(string[] args) {
         var lines = File.ReadAllLines(args[0]);

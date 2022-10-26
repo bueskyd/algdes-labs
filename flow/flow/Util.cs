@@ -31,12 +31,12 @@ public static class Util
         for(int i = 1; i < path.Length; i++) {
             var connection = FindConnection(path[i-1].rev, path[i].to, graph[path[i-1].to].Edges());
             if (connection.rev) {
-                if (connection.edge.capacity == -1) continue;
+                if (connection.edge.capacity < 0) continue;
                 if (connection.edge.flow < minRemainingCap)
                     minRemainingCap = connection.edge.flow;
             }
             else {
-                if (connection.edge.capacity == -1) continue;
+                if (connection.edge.capacity < 0) continue;
                 if (connection.edge.capacity - connection.edge.flow < minRemainingCap) 
                     minRemainingCap = connection.edge.capacity - connection.edge.flow;
             }
