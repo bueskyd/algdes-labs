@@ -26,10 +26,10 @@ public static class Util
         return (-1, false, null);
     }
 
-    public static int PathMinRemainingCapacity((bool rev, int to)[] path, Node[] graph) {
+    public static int PathMinRemainingCapacity((int to, bool rev, Edge edge)[] path, Node[] graph) {
         var minRemainingCap = int.MaxValue;
-        for(int i = 1; i < path.Length; i++) {
-            var connection = FindConnection(path[i-1].rev, path[i].to, graph[path[i-1].to].Edges());
+        for(int i = 0; i < path.Length; i++) {
+            var connection = path[i];// FindConnection(path[i-1].rev, path[i].to, graph[path[i-1].to].Edges());
             if (connection.rev) {
                 if (connection.edge.capacity < 0) continue;
                 if (connection.edge.flow < minRemainingCap)
@@ -44,9 +44,9 @@ public static class Util
         return minRemainingCap;
     }
 
-    public static (bool, (bool, int)[]) Path(int from, int to, Node[] graph) {
+    public static (bool success, (int to, bool rev, Edge edge)[]) Path(int from, int to, Node[] graph) {
 
-        var path = new (bool rev, int to)[graph.Length];
+        var path = new (bool rev, int from)[graph.Length];
         var visited = new bool[graph.Length];
         var stack = new Stack<int>();
         stack.Push(from);
@@ -63,23 +63,26 @@ public static class Util
                 path[c.to] = (c.rev, node);
 
                 if(c.to == to) {
-                    var s = new Stack<(bool, int)>();
+                    var s = new Stack<(int, bool, Edge)>();
+                    var current = to;
                     var p = path[to];
                     while(true) {
-                        s.Push(p);
-                        if (p.to == from) return (true, s.ToArray());
-                        p = path[p.to];
+                        var connection = FindConnection(p.rev, current, graph[p.from].Edges());
+                        s.Push(connection);
+                        if (p.from == from) return (true, s.ToArray());
+                        current = p.from;
+                        p = path[p.from];
                     }
                 }
             }
         } 
 
-        return (false, new (bool,int)[0]);
+        return (false, new (int,bool,Edge)[0]);
     }
 
-    public static void AugmentPath((bool rev, int to)[] path, int by, Node[] graph) {
-        for(int i = 1; i < path.Length; i++) {
-            var connection = FindConnection(path[i-1].rev, path[i].to, graph[path[i-1].to].Edges());
+    public static void AugmentPath((int to, bool rev, Edge edge)[] path, int by, Node[] graph) {
+        for(int i = 0; i < path.Length; i++) {
+            var connection = path[i];// FindConnection(path[i-1].rev, path[i].to, graph[path[i-1].to].Edges());
             
             if (connection.rev) {
                 connection.edge.flow -= by;
