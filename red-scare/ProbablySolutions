@@ -1,0 +1,5 @@
+None: BFS or DFS
+Some: Shortest Path Tree from every red node
+Many: Probably exponential
+Few: Create weighted directed graph. Edges into red nodes have weight 1 all other have weight 0. Use Dijkstra.
+Alternate: BFS with alternating node colors.
