@@ -167,6 +167,22 @@ namespace RedScare
             return costs[tId];
         }
 
+        private int Many(int nodeId, bool[] visited)
+        {
+            Node node = graph.adjacent[nodeId];
+            if (nodeId == tId)
+                return node.red ? 1 : 0;
+            int max = 0;
+            visited[nodeId] = true;
+            for (int i = 0; i < node.edges.Count; i++)
+                max = Math.Max(max, Many(node.edges[i].to, visited));
+            visited[nodeId] = false;
+            return max + (node.red ? 1 : 0);
+        }
+
+        public int Many() =>
+            (graph.adjacent[sId].red ? 1 : 0) + Many(sId, new bool[graph.adjacent.Count]);
+
         public bool Alternate()
         {
             PriorityQueue<int, int> nodes = new();
@@ -210,6 +226,7 @@ namespace RedScare
                     $"\tNone = {redScare.None()}\n" +
                     $"\tSome = {redScare.Some()}\n" +
                     $"\tFew = {redScare.Few()}\n" +
+                    $"\tMany = {redScare.Many()}\n" +
                     $"\tAlternate = {redScare.Alternate()}\n");
             }
             Console.WriteLine();
