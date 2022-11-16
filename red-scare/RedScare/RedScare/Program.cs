@@ -169,6 +169,8 @@ namespace RedScare
 
         private int Many(int nodeId, bool[] visited)
         {
+            if (visited[nodeId])
+                return 0;
             Node node = graph.adjacent[nodeId];
             if (nodeId == tId)
                 return node.red ? 1 : 0;
