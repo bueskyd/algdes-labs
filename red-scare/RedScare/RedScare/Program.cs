@@ -112,11 +112,11 @@ namespace RedScare
             for (int j = 0; j < redNodes.Count; j++)
             {
                 PriorityQueue<int, int> nodes = new();
-                nodes.Enqueue(sId, 0);
+                nodes.Enqueue(redNodes[j], 0);
                 int[] costs = new int[graph.adjacent.Count];
                 for (int i = 0; i < costs.Length; i++)
                     costs[i] = -1;
-                costs[sId] = 0;
+                costs[redNodes[j]] = -1;
                 while (nodes.Count > 0)
                 {
                     int nodeId = nodes.Dequeue();
