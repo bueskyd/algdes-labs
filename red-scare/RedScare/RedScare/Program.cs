@@ -1,11 +1,8 @@
-﻿using System.Reflection.PortableExecutable;
-
-namespace RedScare
+﻿namespace RedScare
 {
     public class Edge
     {
         public int from, to;
-        public int weight;
     }
 
     public class Node
@@ -103,41 +100,7 @@ namespace RedScare
             return costs[tId];
         }
 
-        public bool Some()
-        {
-            List<int> redNodes = new();
-            for (int i = 0; i < graph.adjacent.Count; i++)
-                if (graph.adjacent[i].red)
-                    redNodes.Add(i);
-            for (int j = 0; j < redNodes.Count; j++)
-            {
-                PriorityQueue<int, int> nodes = new();
-                nodes.Enqueue(redNodes[j], 0);
-                int[] costs = new int[graph.adjacent.Count];
-                for (int i = 0; i < costs.Length; i++)
-                    costs[i] = -1;
-                costs[redNodes[j]] = -1;
-                while (nodes.Count > 0)
-                {
-                    int nodeId = nodes.Dequeue();
-                    int cost = costs[nodeId];
-                    var node = graph.adjacent[nodeId];
-                    for (int i = 0; i < node.edges.Count; i++)
-                    {
-                        var edge = node.edges[i];
-                        int c = cost + 1;
-                        if (costs[edge.to] == -1 || c < costs[edge.to])
-                        {
-                            costs[edge.to] = c;
-                            nodes.Enqueue(edge.to, c);
-                        }
-                    }
-                }
-                if (costs[sId] != -1 && costs[tId] != -1)
-                    return true;
-            }
-            return false;
-        }
+        public bool Some() => Many() > 0;
 
         public int Few()
         {
@@ -182,8 +145,7 @@ namespace RedScare
             return max + (node.red ? 1 : 0);
         }
 
-        public int Many() =>
-            (graph.adjacent[sId].red ? 1 : 0) + Many(sId, new bool[graph.adjacent.Count]);
+        public int Many() => Many(sId, new bool[graph.adjacent.Count]);
 
         public bool Alternate()
         {
