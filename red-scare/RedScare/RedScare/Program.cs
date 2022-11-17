@@ -1,5 +1,25 @@
 ﻿namespace RedScare
 {
+    public class Helpers {
+        public static bool IsCyclic(Graph g) {
+            var visited = new HashSet<int>();
+            var queue = new LinkedList<int>();
+            queue.Add(0);
+            while(!queue.Empty) {
+                var current_id = queue.Dequeue();
+                var current_node = g.adjacent[current_id];
+                visited.Add(current_id);
+                foreach(var edge in current_node.edges) {
+                    if (edge.from == current_id) {
+                        if (visited.Contains(edge.to)) return true;
+                        else queue.Add(edge.to);
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
     public class Edge
     {
         public int from, to;
@@ -14,6 +34,7 @@
 
     public class Graph
     {
+        public bool directed = false;
         public List<Node> adjacent = new();
     }
 
@@ -66,6 +87,7 @@
                         to = u
                     });
                 }
+                else graph.directed = true;
             }
             nameToId.TryGetValue(s, out sId);
             nameToId.TryGetValue(t, out tId);
