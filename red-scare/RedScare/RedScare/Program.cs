@@ -2,21 +2,28 @@
 {
     public class Helpers {
         public static bool IsCyclic(Graph g) {
-            var visited = new HashSet<int>();
-            var queue = new LinkedList<int>();
-            queue.Add(0);
-            while(!queue.Empty) {
-                var current_id = queue.Dequeue();
-                var current_node = g.adjacent[current_id];
-                visited.Add(current_id);
-                foreach(var edge in current_node.edges) {
-                    if (edge.from == current_id) {
-                        if (visited.Contains(edge.to)) return true;
-                        else queue.Add(edge.to);
+
+            if (g.directed) {
+                throw new Exception("IsCyclic is not supported for directed graphs... yet");
+            }
+            else {
+                var visited = new HashSet<int>();
+                var queue = new Queue<(int to, int from)>();
+                queue.Enqueue((0, -1));
+                while(queue.Count > 0) {
+                    var (current_id, from_id) = queue.Dequeue();
+                    var current_node = g.adjacent[current_id];
+                    visited.Add(current_id);
+                    foreach(var edge in current_node.edges) {
+                        if (edge.from == current_id) {
+                            if (edge.to == from_id) continue;
+                            if (visited.Contains(edge.to)) return true;
+                            else queue.Enqueue((edge.to, current_id));
+                        }
                     }
                 }
+                return false;
             }
-            return false;
         }
     }
 
@@ -201,19 +208,23 @@
         public static void Main(string[] args)
         {
             var redScare = new RedScare();
-            foreach (var file in Directory.EnumerateFiles("..\\..\\..\\..\\..\\data\\"))
+            foreach (var file in Directory.EnumerateFiles(args[0]))
             {
-                if (file == "..\\..\\..\\..\\..\\data\\README.md")
+                if (file.EndsWith(".md"))
                     continue;
                 using var reader = new StreamReader(file);
                 redScare.ReadInput(reader);
                 Console.WriteLine($"{Path.GetFileName(file)}:\t");
-                Console.WriteLine(
-                    $"\tNone = {redScare.None()}\n" +
-                    $"\tSome = {redScare.Some()}\n" +
-                    $"\tFew = {redScare.Few()}\n" +
-                    $"\tMany = {redScare.Many()}\n" +
-                    $"\tAlternate = {redScare.Alternate()}\n");
+                try {
+                    System.Console.WriteLine($" IsCyclic: {Helpers.IsCyclic(redScare.graph)}");
+                }
+                catch (Exception) {}
+                // Console.WriteLine(
+                //     $"\tNone = {redScare.None()}\n" +
+                //     $"\tSome = {redScare.Some()}\n" +
+                //     $"\tFew = {redScare.Few()}\n" +
+                //     $"\tMany = {redScare.Many()}\n" +
+                //     $"\tAlternate = {redScare.Alternate()}\n");
             }
             Console.WriteLine();
         }
