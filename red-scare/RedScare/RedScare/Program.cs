@@ -2,14 +2,33 @@
 {
     public class Helpers {
         public static bool IsCyclic(Graph g) {
-
+            // Inspired from: https://www.geeksforgeeks.org/detect-cycle-in-a-directed-graph-using-bfs/?ref=rp
             if (g.directed) {
-                throw new Exception("IsCyclic is not supported for directed graphs... yet");
+                var visited = 0;
+                var queue = new Queue<int>();
+                var in_degree = new int[g.adjacent.Count];
+                for(int v = 0; v < g.adjacent.Count; v++) 
+                    for(int e = 0; e < g.adjacent[v].edges.Count; e++) 
+                        in_degree[g.adjacent[v].edges[e].to]++;
+                for(int v = 0; v < in_degree.Length; v++) if (in_degree[v] == 0) queue.Enqueue(v);   
+
+                while(queue.Count > 0) {
+                    var current_id = queue.Dequeue();
+                    visited++;
+                    for(int e = 0; e < g.adjacent[current_id].edges.Count; e++) {
+                        if (g.adjacent[current_id].edges[e].from == current_id) in_degree[g.adjacent[current_id].edges[e].to]--;
+                        if (in_degree[g.adjacent[current_id].edges[e].to] == 0) queue.Enqueue(g.adjacent[current_id].edges[e].to);
+                    }
+                }
+                if (visited != g.adjacent.Count) return true;
+                else return false;
             }
+            // Custom
             else {
                 var visited = new HashSet<int>();
                 var queue = new Queue<(int to, int from)>();
                 queue.Enqueue((0, -1));
+
                 while(queue.Count > 0) {
                     var (current_id, from_id) = queue.Dequeue();
                     var current_node = g.adjacent[current_id];
