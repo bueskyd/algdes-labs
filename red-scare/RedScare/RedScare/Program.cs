@@ -1,5 +1,51 @@
 ﻿namespace RedScare
 {
+    public class Helpers {
+        public static bool IsCyclic(Graph g) {
+            // Inspired from: https://www.geeksforgeeks.org/detect-cycle-in-a-directed-graph-using-bfs/?ref=rp
+            if (g.directed) {
+                var visited = 0;
+                var queue = new Queue<int>();
+                var in_degree = new int[g.adjacent.Count];
+                for(int v = 0; v < g.adjacent.Count; v++) 
+                    for(int e = 0; e < g.adjacent[v].edges.Count; e++) 
+                        in_degree[g.adjacent[v].edges[e].to]++;
+                for(int v = 0; v < in_degree.Length; v++) if (in_degree[v] == 0) queue.Enqueue(v);   
+
+                while(queue.Count > 0) {
+                    var current_id = queue.Dequeue();
+                    visited++;
+                    for(int e = 0; e < g.adjacent[current_id].edges.Count; e++) {
+                        if (g.adjacent[current_id].edges[e].from == current_id) in_degree[g.adjacent[current_id].edges[e].to]--;
+                        if (in_degree[g.adjacent[current_id].edges[e].to] == 0) queue.Enqueue(g.adjacent[current_id].edges[e].to);
+                    }
+                }
+                if (visited != g.adjacent.Count) return true;
+                else return false;
+            }
+            // Custom
+            else {
+                var visited = new HashSet<int>();
+                var queue = new Queue<(int to, int from)>();
+                queue.Enqueue((0, -1));
+
+                while(queue.Count > 0) {
+                    var (current_id, from_id) = queue.Dequeue();
+                    var current_node = g.adjacent[current_id];
+                    visited.Add(current_id);
+                    foreach(var edge in current_node.edges) {
+                        if (edge.from == current_id) {
+                            if (edge.to == from_id) continue;
+                            if (visited.Contains(edge.to)) return true;
+                            else queue.Enqueue((edge.to, current_id));
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
     public class Edge
     {
         public int from, to;
@@ -14,6 +60,7 @@
 
     public class Graph
     {
+        public bool directed = false;
         public List<Node> adjacent = new();
     }
 
@@ -66,6 +113,7 @@
                         to = u
                     });
                 }
+                else graph.directed = true;
             }
             nameToId.TryGetValue(s, out sId);
             nameToId.TryGetValue(t, out tId);
@@ -181,21 +229,24 @@
         public static void Main(string[] args)
         {
             var redScare = new RedScare();
-            foreach (var file in Directory.EnumerateFiles("..\\..\\..\\..\\..\\data\\"))
+            foreach (var file in Directory.EnumerateFiles(args[0]))
             {
-                if (file == "..\\..\\..\\..\\..\\data\\README.md")
-                    continue;
-                if (file == "..\\..\\..\\..\\..\\data\\bht.txt")
+                if (file.EndsWith(".md"))
                     continue;
                 using var reader = new StreamReader(file);
                 redScare.ReadInput(reader);
                 Console.WriteLine($"{Path.GetFileName(file)}:\t");
-                Console.WriteLine($"\tNone = {redScare.None()}");
-                Console.WriteLine($"\tSome = {redScare.Some()}");
-                Console.WriteLine($"\tFew = {redScare.Few()}");
-                Console.WriteLine($"\tMany = {redScare.Many()}");
-                Console.WriteLine($"\tAlternate = {redScare.Alternate()}");
-                Console.WriteLine();
+                try
+                {
+                    System.Console.WriteLine($" IsCyclic: {Helpers.IsCyclic(redScare.graph)}");
+                }
+                catch (Exception) { }
+                Console.WriteLine(
+                    $"\tNone = {redScare.None()}\n" +
+                    $"\tSome = {redScare.Some()}\n" +
+                    $"\tFew = {redScare.Few()}\n" +
+                    $"\tMany = {redScare.Many()}\n" +
+                    $"\tAlternate = {redScare.Alternate()}\n");
             }
             Console.WriteLine();
 
