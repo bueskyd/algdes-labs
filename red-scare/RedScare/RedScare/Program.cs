@@ -229,7 +229,10 @@
         public static void Main(string[] args)
         {
             var redScare = new RedScare();
-            foreach (var file in Directory.EnumerateFiles(args[0]))
+            string dir = "..\\..\\..\\..\\..\\data";
+            if (args.Length != 0)
+                dir = args[0];
+            foreach (var file in Directory.EnumerateFiles(dir))
             {
                 if (file.EndsWith(".md"))
                     continue;
@@ -238,7 +241,7 @@
                 Console.WriteLine($"{Path.GetFileName(file)}:\t");
                 try
                 {
-                    System.Console.WriteLine($" IsCyclic: {Helpers.IsCyclic(redScare.graph)}");
+                    Console.WriteLine($" IsCyclic: {Helpers.IsCyclic(redScare.graph)}");
                 }
                 catch (Exception) { }
                 Console.WriteLine(
