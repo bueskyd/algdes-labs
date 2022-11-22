@@ -24,7 +24,7 @@
         private string s, t;
         private int sId, tId;
 
-        public void ReadInput(StreamReader reader)
+        public void ReadInput(TextReader reader)
         {
             string[] line = reader.ReadLine().Split(' ');
             int n = int.Parse(line[0]);
@@ -130,22 +130,24 @@
             return costs[tId];
         }
 
-        private int Many(int nodeId, bool[] visited)
+        private int Many(int nodeId, int[] most)
         {
-            if (visited[nodeId])
-                return 0;
+            if (most[nodeId] != -1)
+                return most[nodeId];
             Node node = graph.adjacent[nodeId];
-            if (nodeId == tId)
-                return node.red ? 1 : 0;
             int max = 0;
-            visited[nodeId] = true;
             for (int i = 0; i < node.edges.Count; i++)
-                max = Math.Max(max, Many(node.edges[i].to, visited));
-            visited[nodeId] = false;
-            return max + (node.red ? 1 : 0);
+                max = Math.Max(max, Many(node.edges[i].to, most));
+            return most[nodeId] = max + (node.red ? 1 : 0);
         }
 
-        public int Many() => Many(sId, new bool[graph.adjacent.Count]);
+        public int Many()
+        {
+            int[] most = new int[graph.adjacent.Count];
+            for (int i = 0; i < most.Length; i++)
+                most[i] = -1;
+            return Many(sId, most);
+        }
 
         public bool Alternate()
         {
@@ -183,17 +185,30 @@
             {
                 if (file == "..\\..\\..\\..\\..\\data\\README.md")
                     continue;
+                if (file == "..\\..\\..\\..\\..\\data\\bht.txt")
+                    continue;
                 using var reader = new StreamReader(file);
                 redScare.ReadInput(reader);
                 Console.WriteLine($"{Path.GetFileName(file)}:\t");
-                Console.WriteLine(
-                    $"\tNone = {redScare.None()}\n" +
-                    $"\tSome = {redScare.Some()}\n" +
-                    $"\tFew = {redScare.Few()}\n" +
-                    $"\tMany = {redScare.Many()}\n" +
-                    $"\tAlternate = {redScare.Alternate()}\n");
+                Console.WriteLine($"\tNone = {redScare.None()}");
+                Console.WriteLine($"\tSome = {redScare.Some()}");
+                Console.WriteLine($"\tFew = {redScare.Few()}");
+                Console.WriteLine($"\tMany = {redScare.Many()}");
+                Console.WriteLine($"\tAlternate = {redScare.Alternate()}");
+                Console.WriteLine();
             }
             Console.WriteLine();
+
+            /*var redScare = new RedScare();
+            using var reader = Console.In;
+            redScare.ReadInput(reader);
+            Console.WriteLine($"\tNone = {redScare.None()}");
+            Console.WriteLine($"\tSome = {redScare.Some()}");
+            Console.WriteLine($"\tFew = {redScare.Few()}");
+            Console.WriteLine($"\tMany = {redScare.Many()}");
+            Console.WriteLine($"\tAlternate = {redScare.Alternate()}");
+            Console.WriteLine();
+            Console.WriteLine();*/
         }
     }
 }
