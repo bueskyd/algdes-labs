@@ -457,13 +457,34 @@
                 }
                 else
                     Console.WriteLine($"\tSome = {redScare.AcyclicSome()}");
-                Console.WriteLine($"\tFew = {redScare.Few()}");
                 if (!isCyclic)
                     Console.WriteLine($"\tMany = {redScare.Many()}");
                 else
                     Console.WriteLine("\tGraph is cyclic. Skipping Many as it would run in non-polynomial time.");
+                Console.WriteLine($"\tFew = {redScare.Few()}");
                 Console.WriteLine($"\tAlternate = {redScare.Alternate()}");
                 Console.WriteLine();
+
+                /*Console.Write(Path.GetFileName(file) + " & ");
+                Console.Write(redScare.graph.adjacent.Count + " & ");
+                Console.Write($"{redScare.None()} & ");
+                bool isCyclic = Helpers.IsCyclic(redScare.graph);
+                if (isCyclic)
+                {
+                    if (redScare.graph.directed)
+                        Console.Write("? & ");
+                    else
+                        Console.Write(redScare.UndirectedCyclicSome() + " & ");
+                }
+                else
+                    Console.Write(redScare.AcyclicSome() + " & ");
+                if (!isCyclic)
+                    Console.Write(redScare.Many() + " & ");
+                else
+                    Console.Write("? & ");
+                Console.Write(redScare.Few() + " & ");
+                Console.Write(redScare.Alternate() + " \\\\");
+                Console.WriteLine();*/
             }
             Console.WriteLine();
 
