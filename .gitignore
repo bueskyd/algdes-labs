@@ -34,6 +34,9 @@
 /closest-points/ClosestPoints/ClosestPoints/bin/Debug/net6.0
 /closest-points/ClosestPoints/.vs
 /.vs
+obj
+bin
+Debug
 /closest-points/closest-pair/obj/Debug/net6.0/.NETCoreApp,Version=v6.0.AssemblyAttributes.cs
 /closest-points/closest-pair/obj
 /gorilla/Gorilla/bin/Debug/net6.0
