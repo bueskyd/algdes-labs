@@ -4,6 +4,7 @@ namespace RedScare.entities
     {
         public string Name;
         public Color Color;
+        public uint Index;
 
         public Node(string name, Color color)
         {
@@ -13,7 +14,7 @@ namespace RedScare.entities
 
         public override string ToString()
         {
-            return $"{nameof(Name)}: {Name}, {nameof(Color)}: {Color}";
+            return $"{nameof(Name)}: {Name}, {nameof(Color)}: {Color}, {nameof(Index)}: {Index}";
         }
     }
 }

@@ -4,8 +4,8 @@
 - Some
 	- Network flow, og prøv for alle røde
 - Many 
-	- Ved ikke endnu, mem hint er: directed acyclic graph, og reducer til et andet kendt NP problem.
+	- Longest path med reduction
 - Few
 	- Lav Dijkstra, med en cost til sorte edges med 0, og en cost til røde edges med 1, så den altid foretrækker sorte edges.
-- 
+- Alternate
 	- Lav Dijkstra, men ikke tilføj edges der går fra sort til sort, eller rød til rød.
